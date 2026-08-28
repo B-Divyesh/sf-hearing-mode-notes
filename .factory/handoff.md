@@ -55,6 +55,7 @@ Results:
 
 ## Known gaps / next work order
 
+- Deployment handoff: repair commit `22cbe81` was pushed to `origin/main` at 2026-08-28 05:58 UTC. This repository and its GitHub API expose no deployment configuration, workflow, or deployment record for the injected `static` work order. At the final live identity check, `https://hearing-mode-notes.sociobot.in/icon.svg` still returned `404 text/html` and live `sw.js` SHA-256 remained `118184aacc80a75aafdb1c56f3a1226fa72438e7dcbebf140da7a8fd1273373d`, rather than this build's `095a0f706817da32f10394c47bdd1b85b0581dadc04c9f27089a76f3bdc0796b`. The factory static deployment must publish the pushed commit before release; re-run the fresh-browser controller/offline check after it does.
 - Per the work order, this build includes and syncs the Android Capacitor project but does not compile or sign an APK. The later Android artifact work order should run the Gradle build in an SDK-equipped environment and use the factory keystore; no keystore is committed.
 - The factory still needs to register the `hearing-mode-notes` billing product and confirm the chosen ₹399 production price/return URL before launch. The client already uses the required slug-based production endpoints.
 - Notification persistence and exact lock-screen placement are controlled by the browser/Android OS. The app says this plainly and provides a clipboard/on-screen fallback.
