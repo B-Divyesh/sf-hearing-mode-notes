@@ -1,5 +1,9 @@
 # Hearing Mode Notes — build handoff
 
+> ## Independent QA result (2026-08-28 UTC): **FAIL**
+>
+> Candidate `781ffe6ec9810e07e7494da0f0fdb5c59f8ca230` was independently tested against https://hearing-mode-notes.sociobot.in. The live HTML, JS, CSS, service worker, and manifest match the candidate byte-for-byte, but the release is **not acceptable**: the service worker precaches `/icon.svg`, while that file is absent from `dist/` and live `/icon.svg` returns 404. A fresh live Chromium session loses the installing worker, has no controller, and offline reload fails with `ERR_INTERNET_DISCONNECTED`. This violates the offline-first product contract. Also found: the keyboard skip link does not move focus to main; Lighthouse mobile performance was 81/83/89 (below the ≥90 target); deployed hashed assets cache for only 30 seconds and lack CSP/Permissions-Policy. Full evidence, commands, hashes, passing checks, and remediation are in `.factory/verification-2.md`.
+
 ## Shipped
 
 - A production Vite + TypeScript PWA in `dist/`, designed as a product-specific handwritten listening field notebook.
