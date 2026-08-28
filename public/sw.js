@@ -1,5 +1,5 @@
-const CACHE = "hearing-mode-notes-v1";
-const SHELL = ["/", "/index.html", "/offline.html", "/manifest.webmanifest", "/icon.svg", "/icon-192.png", "/icon-512.png", "/assets/notebook-hero-720.webp", "/assets/notebook-hero-1280.webp"];
+const CACHE = "hearing-mode-notes-v2";
+const SHELL = ["/", "/index.html", "/offline.html", "/manifest.webmanifest", "/icon.svg", "/icon-192.png", "/icon-512.png", "/assets/notebook-hero-480.webp", "/assets/notebook-hero-720.webp", "/assets/notebook-hero-1280.webp"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {

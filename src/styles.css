@@ -266,6 +266,12 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--ink); }
 .inline-notice { padding: 10px; border-left: 3px solid var(--ochre); background: var(--wash); color: var(--text) !important; }
 .license-active { min-height: 88px; display: flex; align-items: center; gap: 10px; color: var(--sage); }
 .license-active .text-button { margin-left: auto; }
+.license-active-block { display: flex; flex-direction: column; gap: 16px; }
+.custom-place-form { padding-top: 16px; border-top: 1px solid var(--rule); }
+.custom-place-form label { display: block; margin-bottom: 6px; font-weight: 750; }
+.custom-place-list { margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; list-style: none; }
+.custom-place-list li { min-height: 44px; padding-left: 12px; display: flex; align-items: center; gap: 7px; border: 1px solid var(--rule); border-left: 3px solid var(--ink); background: var(--paper); font-weight: 700; }
+.custom-place-list button { width: 44px; height: 44px; border: 0; background: transparent; color: var(--coral); font-size: 24px; cursor: pointer; }
 .danger-zone { margin-top: 32px; border-top-color: var(--coral); }
 .danger-zone .button { justify-self: end; }
 .small-print { padding: 24px; border: 1px dashed var(--rule); color: var(--muted); }

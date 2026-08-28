@@ -26,9 +26,12 @@ test("saves, recalls, searches, and edits a setup", async ({ page }) => {
 test("has no serious or critical accessibility violations", async ({ page }) => {
   await page.goto("/");
   await page.waitForTimeout(300);
-  const results = await new AxeBuilder({ page }).analyze();
-  const serious = results.violations.filter((violation) => ["serious", "critical"].includes(violation.impact ?? ""));
-  expect(serious).toEqual([]);
+  const lightResults = await new AxeBuilder({ page }).analyze();
+  expect(lightResults.violations.filter((violation) => ["serious", "critical"].includes(violation.impact ?? ""))).toEqual([]);
+  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+  await page.reload();
+  const darkResults = await new AxeBuilder({ page }).analyze();
+  expect(darkResults.violations.filter((violation) => ["serious", "critical"].includes(violation.impact ?? ""))).toEqual([]);
 });
 
 test("works offline after the app shell is installed", async ({ page, context }) => {
@@ -50,4 +53,18 @@ test("privacy and terms are directly addressable", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "Your notes stay yours." })).toBeVisible();
   await page.goto("/terms");
   await expect(page.getByRole("heading", { level: 1, name: "Terms of use" })).toBeVisible();
+});
+
+test("licensed users can add a reusable custom place tab", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("sb_license:hearing-mode-notes", "test-license");
+    localStorage.setItem("sb_license_verdict:hearing-mode-notes", JSON.stringify({ valid: true, checkedAt: Date.now() }));
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Settings" }).click();
+  await expect(page.getByText("License active", { exact: true })).toBeVisible();
+  await page.getByLabel("Add a custom place tab").fill("Community hall");
+  await page.getByRole("button", { name: "Add place" }).click();
+  await page.getByRole("button", { name: "New note" }).click();
+  await expect(page.getByRole("dialog").getByRole("button", { name: "Community hall" })).toBeVisible();
 });
