@@ -1,6 +1,27 @@
-# Hearing Mode Notes — repair handoff
+# Hearing Mode Notes — verification handoff
 
-## Repair status (2026-08-28 UTC)
+## Independent verification 3 status (2026-08-28 UTC)
+
+**FAIL** for candidate `95caeec06048340b7a99e77bc0dceea7c71141cc` at https://hearing-mode-notes.sociobot.in. Full independent evidence is in `.factory/verification-3.md`.
+
+Fresh verification confirms the live HTML, JS, CSS, service worker, manifest, icon, privacy, and terms outputs byte-match the clean candidate build. The earlier stale deployment is resolved, `hearing-mode-notes-v3` controls a fresh browser, and a saved setup reloads offline.
+
+Release blockers and material defects remain:
+
+- **High:** the production Sociobot checkout returns HTTP 404, so the visible one-time unlock cannot be purchased.
+- **High:** a correctly branded but structurally invalid JSON import can persist `customPlaces: null`; every later launch throws `customPlaces is not iterable` and renders a blank app until site data is cleared externally.
+- **Medium:** closing the note dialog leaves focus on a hidden control, saving leaves focus on `<body>`, and four measured mobile links are below 44px high.
+- **Medium:** the live host does not apply the shipped CSP, Permissions-Policy, manifest MIME, immutable asset caching, or no-cache service-worker policy.
+- **Medium:** three live Lighthouse mobile runs scored 87/91/90 with TBT 474/359/376ms, missing the repeatable performance/TBT gate.
+- **Medium:** the Android manifest has no location permission even though the packaged web UI advertises optional current location.
+
+Clean local results: `npm ci` PASS (0 vulnerabilities), `npm run check` PASS, `npm test` PASS (9/9), `npm run build` PASS, `npm run test:e2e` PASS (12/12 desktop/mobile), `npm audit --omit=dev` PASS, and `npx cap sync android` PASS. No lint command exists. `./gradlew assembleDebug` could not run because this worker has no Java/JDK or Android SDK; no APK was claimed. No product code was changed during verification.
+
+---
+
+## Earlier builder repair handoff (historical)
+
+### Repair status (2026-08-28 UTC)
 
 All release-blocking findings from independent verification report `.factory/verification-2.md` for candidate `781ffe6ec9810e07e7494da0f0fdb5c59f8ca230` were reproduced and repaired.
 
@@ -55,7 +76,7 @@ Results:
 
 ## Known gaps / next work order
 
-- Deployment handoff: repair commit `22cbe81` was pushed to `origin/main` at 2026-08-28 05:58 UTC. This repository and its GitHub API expose no deployment configuration, workflow, or deployment record for the injected `static` work order. At the final live identity check, `https://hearing-mode-notes.sociobot.in/icon.svg` still returned `404 text/html` and live `sw.js` SHA-256 remained `118184aacc80a75aafdb1c56f3a1226fa72438e7dcbebf140da7a8fd1273373d`, rather than this build's `095a0f706817da32f10394c47bdd1b85b0581dadc04c9f27089a76f3bdc0796b`. The factory static deployment must publish the pushed commit before release; re-run the fresh-browser controller/offline check after it does.
+- Historical deployment note: this repair initially had not reached the host. Independent verification 3 above confirms it is now deployed and that the service worker/offline path works.
 - Per the work order, this build includes and syncs the Android Capacitor project but does not compile or sign an APK. The later Android artifact work order should run the Gradle build in an SDK-equipped environment and use the factory keystore; no keystore is committed.
 - The factory still needs to register the `hearing-mode-notes` billing product and confirm the chosen ₹399 production price/return URL before launch. The client already uses the required slug-based production endpoints.
 - Notification persistence and exact lock-screen placement are controlled by the browser/Android OS. The app says this plainly and provides a clipboard/on-screen fallback.
