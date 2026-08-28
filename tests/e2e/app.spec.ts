@@ -34,9 +34,15 @@ test("has no serious or critical accessibility violations", async ({ page }) => 
   expect(darkResults.violations.filter((violation) => ["serious", "critical"].includes(violation.impact ?? ""))).toEqual([]);
 });
 
-test("works offline after the app shell is installed", async ({ page, context }) => {
+test("ships its precached icon, activates the worker, and works offline", async ({ page, context }) => {
+  const iconResponse = await page.goto("/icon.svg");
+  expect(iconResponse?.headers()["content-type"]).toContain("image/svg+xml");
+  expect(await iconResponse?.text()).toContain("<svg");
   await page.goto("/");
-  await page.waitForFunction(async () => Boolean(await navigator.serviceWorker?.ready));
+  await page.waitForFunction(async () => {
+    const registration = await navigator.serviceWorker?.getRegistration();
+    return Boolean(registration?.active && navigator.serviceWorker?.controller);
+  });
   await page.getByRole("button", { name: "Note a setup" }).first().click();
   await page.getByRole("dialog").getByRole("button", { name: "Home", exact: true }).click();
   await page.getByLabel("Listening mode").fill("Everyday");
@@ -46,6 +52,14 @@ test("works offline after the app shell is installed", async ({ page, context })
   await page.reload();
   await expect(page.getByRole("heading", { name: /Ready to return to Home/ })).toBeVisible();
   await expect(page.getByText("Offline — notes still work")).toBeAttached();
+});
+
+test("skip link moves keyboard focus into the main landmark", async ({ page }) => {
+  await page.goto("/");
+  await page.keyboard.press("Tab");
+  await expect(page.locator(".skip-link")).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("main#main")).toBeFocused();
 });
 
 test("privacy and terms are directly addressable", async ({ page }) => {
@@ -65,6 +79,6 @@ test("licensed users can add a reusable custom place tab", async ({ page }) => {
   await expect(page.getByText("License active", { exact: true })).toBeVisible();
   await page.getByLabel("Add a custom place tab").fill("Community hall");
   await page.getByRole("button", { name: "Add place" }).click();
-  await page.getByRole("button", { name: "New note" }).click();
+  await page.locator("[data-new]:visible").first().click();
   await expect(page.getByRole("dialog").getByRole("button", { name: "Community hall" })).toBeVisible();
 });

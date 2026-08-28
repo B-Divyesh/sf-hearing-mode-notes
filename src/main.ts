@@ -49,7 +49,7 @@ function legalPage(kind: "privacy" | "terms"): string {
   const privacy = kind === "privacy";
   return `
     <header class="site-header"><a class="brand" href="/">${icon("book")}<span>Hearing Mode Notes</span></a></header>
-    <main id="main" class="legal-page">
+    <main id="main" class="legal-page" tabindex="-1">
       <p class="eyebrow">The plain-language ${privacy ? "privacy note" : "terms"}</p>
       <h1>${privacy ? "Your notes stay yours." : "Terms of use"}</h1>
       ${privacy ? `
@@ -154,7 +154,7 @@ function confirmDialog(): string {
 }
 
 function shell(): string {
-  return `${header()}${navigation()}<main id="main">${view === "home" ? homeView() : view === "history" ? historyView() : settingsView()}</main><button class="floating-new" type="button" data-new aria-label="New note">${icon("plus")}<span>New note</span></button>${noteDialog()}${confirmDialog()}<div class="toast" data-toast role="status" aria-live="polite" aria-atomic="true"></div><footer class="site-footer"><span>Private by default. Made for remembering, not controlling.</span><span><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="https://github.com/B-Divyesh/sf-hearing-mode-notes">Source</a></span><small>Hero imagery generated for this product with Azure AI Foundry.</small></footer>`;
+  return `${header()}${navigation()}<main id="main" tabindex="-1">${view === "home" ? homeView() : view === "history" ? historyView() : settingsView()}</main><button class="floating-new" type="button" data-new aria-label="New note">${icon("plus")}<span>New note</span></button>${noteDialog()}${confirmDialog()}<div class="toast" data-toast role="status" aria-live="polite" aria-atomic="true"></div><footer class="site-footer"><span>Private by default. Made for remembering, not controlling.</span><span><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="https://github.com/B-Divyesh/sf-hearing-mode-notes">Source</a></span><small>Hero imagery generated for this product with Azure AI Foundry.</small></footer>`;
 }
 
 function render(): void {
@@ -288,7 +288,7 @@ function bindEvents(): void {
   document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((button) => button.addEventListener("click", () => {
     view = button.dataset.view as View;
     render();
-    document.querySelector<HTMLElement>("#main h1")?.focus({ preventScroll: true });
+    document.querySelector<HTMLElement>("#main")?.focus({ preventScroll: true });
     scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   }));
   document.querySelectorAll<HTMLElement>("[data-close-dialog]").forEach((button) => button.addEventListener("click", closeNote));
@@ -377,7 +377,8 @@ async function init(): Promise<void> {
   try {
     [notes, settings] = await Promise.all([getNotes(), getSettings()]);
   } catch {
-    root.innerHTML = `<main id="main" class="fatal-error"><h1>Your notebook could not open.</h1><p>Device storage may be blocked or full. Allow site storage, then reload. No notes were sent anywhere.</p><button class="button primary" onclick="location.reload()">Try again</button></main>`;
+    root.innerHTML = `<main id="main" class="fatal-error" tabindex="-1"><h1>Your notebook could not open.</h1><p>Device storage may be blocked or full. Allow site storage, then reload. No notes were sent anywhere.</p><button class="button primary" type="button" data-reload>Try again</button></main>`;
+    root.querySelector<HTMLButtonElement>("[data-reload]")?.addEventListener("click", () => location.reload());
     return;
   }
   render();
@@ -387,10 +388,24 @@ async function init(): Promise<void> {
   window.addEventListener("offline", updateOnlineState);
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.addEventListener("message", (event) => { if (event.data?.type === "SW_UPDATED") showToast("Notebook updated and ready offline."); });
-    navigator.serviceWorker.register("/sw.js").catch(() => showToast("Offline setup is unavailable right now. Your local notes still work."));
+    const registerServiceWorker = () => navigator.serviceWorker.register("/sw.js").catch(() => showToast("Offline setup is unavailable right now. Your local notes still work."));
+    if (document.readyState === "complete") void registerServiceWorker();
+    else window.addEventListener("load", () => void registerServiceWorker(), { once: true });
   }
-  license = await verifyLicense();
-  render();
+  if (license.token) {
+    window.setTimeout(() => {
+      void verifyLicense().then((nextLicense) => {
+        if (nextLicense.unlocked !== license.unlocked || nextLicense.notice !== license.notice) {
+          license = nextLicense;
+          render();
+        }
+      });
+    }, 0);
+  }
 }
+
+document.querySelector<HTMLAnchorElement>(".skip-link")?.addEventListener("click", () => {
+  window.requestAnimationFrame(() => document.querySelector<HTMLElement>("#main")?.focus());
+});
 
 void init();

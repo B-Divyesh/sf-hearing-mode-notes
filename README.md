@@ -31,9 +31,9 @@ npm run build
 npm run test:e2e
 ```
 
-The exact production build command is `npm run build`. Static output lands in `dist/`, including directly addressable `privacy/index.html` and `terms/index.html` routes.
+The exact production build command is `npm run build`. Static output lands in `dist/`, including directly addressable `privacy/index.html` and `terms/index.html` routes. It also includes the deployment `_headers` policy: immutable caching for fingerprinted assets, a no-cache service worker, CSP, Permissions-Policy, and the correct web-manifest MIME type.
 
-Playwright is pinned to 1.58.2. The end-to-end suite starts the production preview itself and covers a Pixel 5 viewport, IndexedDB persistence, offline reload, accessibility, editing/search, legal routes, and the licensed custom-place path.
+Playwright is pinned to 1.58.2. The end-to-end suite starts the production preview itself and covers desktop and 390px mobile layouts, IndexedDB persistence, a fresh service-worker controller plus offline reload, keyboard skip navigation, accessibility, editing/search, legal routes, and the licensed custom-place path.
 
 ## Android project
 

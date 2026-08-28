@@ -10,7 +10,8 @@ export default defineConfig({
     trace: "retain-on-failure"
   },
   projects: [
-    { name: "mobile-chromium", use: { ...devices["Pixel 5"] } }
+    { name: "desktop-chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "mobile-390px", use: { ...devices["Pixel 5"], viewport: { width: 390, height: 844 } } }
   ],
   webServer: {
     command: "npm run build && npm run preview",
