@@ -3,11 +3,30 @@
   "title": "Hearing Mode Notes",
   "territory": "utilities",
   "user": "Hearing-aid wearers who change listening modes by place and need a quick, private record of what setting actually worked.",
+  "evidence": [
+    {
+      "url": "https://hn.algolia.com/api/v1/items/46029699",
+      "date": "2025-11-24",
+      "quote_or_summary": "Ask HN: Hearing aid wearers, what's hot? drew 210 comments, including discussion of AirPods as a possible backup rather than a replacement for primary hearing aids."
+    },
+    {
+      "url": "https://github.com/d4rken-org/capod/issues/685",
+      "date": "2026-08-19",
+      "quote_or_summary": "A hearing-aid user asks for volume control support after pairing AirPods hearing-aid mode with Android; they need access to listening modes and settings."
+    }
+  ],
+  "recurrence": "A large wearer discussion and a concrete Android control request show that hearing support is highly contextual and hardware controls remain fragmented.",
+  "current_workaround": "Memorize settings, take generic notes, repeatedly open a manufacturer app, or leave a suboptimal mode active.",
+  "incumbents_and_gap": "Manufacturer companion apps expose device controls but rarely build a user-owned, cross-device memory of what worked in a restaurant, office, or commute. General note apps require too much setup in the moment.",
   "smallest_useful_product": "Offline Android app with one-tap place tags, mode/volume notes, optional manual sound-comfort rating, and a lock-screen reminder of the last successful setup.",
   "success_measure": "After 30 days, users retrieve a prior successful setting in under 10 seconds for 70% of tagged places and report fewer trial-and-error changes.",
   "artifact_class": "android",
   "monetization": "one-time",
   "constraints": "No microphone access or health inference; location is optional and stored locally; never imply compatibility with or control over medical devices.",
+  "est_build_effort": "S",
+  "why_distinct": "It is an experiential memory aid around device modes, not another hearing-aid controller or a medical app.",
+  "confidence": 3,
+  "state": "RESEARCHED",
   "non_goals": [
     "Controlling hearing aids",
     "Sound amplification",

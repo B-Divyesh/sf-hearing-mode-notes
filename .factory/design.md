@@ -56,6 +56,7 @@ Prompt sheet:
 - Generation date: 2026-08-28.
 - License/provenance: original generated image commissioned for this product; no reference images, brands, or copyrighted characters.
 - Source candidates and exact prompt sidecars live in `assets/src/`; shipped WebP derivatives live in `public/assets/` and remain at or below 300 KB.
+- The hand-authored notebook SVG at `assets/src/app-icon.svg` is the source for the PWA and Android adaptive icons. `assets/icon.png` and `assets/splash.png` are local raster masters generated from it; Capacitor's asset generator produced the light/dark native splash and density-specific Android icons.
 
 ## Dark treatment
 
