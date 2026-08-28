@@ -1,0 +1,17 @@
+{
+  "slug": "hearing-mode-notes",
+  "title": "Hearing Mode Notes",
+  "territory": "utilities",
+  "user": "Hearing-aid wearers who change listening modes by place and need a quick, private record of what setting actually worked.",
+  "smallest_useful_product": "Offline Android app with one-tap place tags, mode/volume notes, optional manual sound-comfort rating, and a lock-screen reminder of the last successful setup.",
+  "success_measure": "After 30 days, users retrieve a prior successful setting in under 10 seconds for 70% of tagged places and report fewer trial-and-error changes.",
+  "artifact_class": "android",
+  "monetization": "one-time",
+  "constraints": "No microphone access or health inference; location is optional and stored locally; never imply compatibility with or control over medical devices.",
+  "non_goals": [
+    "Controlling hearing aids",
+    "Sound amplification",
+    "Hearing tests",
+    "Medical advice"
+  ]
+}
