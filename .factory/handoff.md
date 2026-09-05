@@ -1,6 +1,16 @@
-# Hearing Mode Notes repair handoff
+# Hearing Mode Notes verification 4 handoff
 
 Date: 2026-09-05
+
+## Independent verification 4
+
+**Verdict: PASS — 0 findings and 0 untested public claims.**
+
+Verification 4 independently opened the live product in fresh desktop and 390 px phone contexts, exercised the one-click sample, proved reset and real-data isolation, checked normal and recovery paths, tested keyboard and reduced-motion behavior, reloaded the controlled app offline, inspected routes and a deliberate HTTP 404, and audited privacy requests. All twelve declared claim commands passed separately in both browser projects. The full browser suite passed 38/38.
+
+The clean build byte-matches the live HTML, JavaScript, CSS, service worker, and manifest. Fresh live Lighthouse scored 99 performance and 100 accessibility. CSP, Permissions-Policy, manifest MIME, immutable asset caching, no-cache service-worker handling, legal routes, and the designed 404 all pass live.
+
+The complete report is `.factory/verification-4.md`. Evidence is copied to `/work/.evidence/qa-report.md`, with the machine result at `/work/.evidence/qa-result.json`.
 
 ## Product and first screen
 
