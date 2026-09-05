@@ -13,6 +13,7 @@ const currentUrl = () => new URL(location.href);
 const initialPath = location.pathname.replace(/\/$/, "") || "/";
 const isDemo = initialPath === "/demo" || currentUrl().searchParams.get("demo") === "1";
 const demoBase = initialPath === "/demo" ? "/demo" : "/";
+const DEMO_SEEDED_SESSION_KEY = "demo:hearing-mode-notes:seeded";
 useStorageNamespace(isDemo ? "demo" : "real");
 
 let notes: SetupNote[] = [];
@@ -151,7 +152,7 @@ function settingsView(): string {
 
 function legalPage(kind: "privacy" | "terms"): string {
   const privacy = kind === "privacy";
-  return `${header()}<main id="main" class="legal-page" tabindex="-1"><p class="eyebrow">${privacy ? "Privacy" : "Terms"}</p><h1>${privacy ? "Privacy for your listening notes" : "Terms for using Hearing Mode Notes"}</h1>${privacy ? `<p>Hearing Mode Notes stores your setup notes, preferences, and optional coordinates in this browser. The notes are not sent to us.</p><h2>What the app does not use</h2><p>The app has no analytics, advertising, microphone access, or background location tracking.</p><h2>Your controls</h2><p>Export notes as JSON or CSV, import a valid JSON backup, or erase local data in Settings.</p><h2>Permissions</h2><p>Location is requested only after you press “Add current location.”</p>` : `<p>Hearing Mode Notes is a personal memory aid. It does not control hearing aids or provide medical advice.</p><h2>Using the app</h2><p>You are responsible for the notes you enter and for keeping exports safe. Do not rely on a reminder for safety-critical decisions.</p>`}<h2>Questions</h2><p>Contact <a href="mailto:support@sociobot.in">support@sociobot.in</a>.</p></main>${footer()}`;
+  return `${header()}<main id="main" class="legal-page" tabindex="-1"><p class="eyebrow">${privacy ? "Privacy" : "Terms"}</p><h1>${privacy ? "Privacy for your listening notes" : "Terms for using Hearing Mode Notes"}</h1>${privacy ? `<p>Hearing Mode Notes stores your setup notes, preferences, and optional coordinates in this browser. The notes are not sent to us.</p><h2>What the app does not use</h2><p>The app has no analytics, advertising, microphone access, or background location tracking.</p><h2>Your controls</h2><p>Export notes as JSON or CSV, import a valid JSON backup, or erase local data in Settings.</p><h2>Permissions</h2><p>Location is requested only after you press “Add current location.”</p>` : `<p>Hearing Mode Notes is a personal memory aid. It does not control hearing aids or provide medical advice.</p><h2>Using the app</h2><p>You are responsible for the notes you enter and for keeping exports safe. Do not rely on a reminder for safety-critical decisions.</p>`}<h2>Questions</h2><p>Contact <a class="legal-contact-link" href="mailto:support@sociobot.in">support@sociobot.in</a>.</p></main>${footer()}`;
 }
 
 function notFoundPage(): string {
@@ -311,13 +312,13 @@ function bindEvents(): void {
   document.querySelector<HTMLButtonElement>("[data-start-real]")?.addEventListener("click", () => void startForReal());
 }
 
-async function resetDemo(): Promise<void> { await clearAllData(); await importBundle(SAMPLE_BUNDLE); [notes, settings] = await Promise.all([getNotes(), getSettings()]); render(); showToast("Sample notes reset."); }
-async function startForReal(): Promise<void> { await clearAllData(); location.assign("/"); }
+async function resetDemo(): Promise<void> { await clearAllData(); await importBundle(SAMPLE_BUNDLE); sessionStorage.setItem(DEMO_SEEDED_SESSION_KEY, "1"); [notes, settings] = await Promise.all([getNotes(), getSettings()]); render(); showToast("Sample notes reset."); }
+async function startForReal(): Promise<void> { await clearAllData(); sessionStorage.removeItem(DEMO_SEEDED_SESSION_KEY); location.assign("/"); }
 
 function updateOnlineState(): void { document.documentElement.classList.toggle("offline", !navigator.onLine); }
 
 async function init(): Promise<void> {
-  try { [notes, settings] = await Promise.all([getNotes(), getSettings()]); if (isDemo && notes.length === 0) { await importBundle(SAMPLE_BUNDLE); [notes, settings] = await Promise.all([getNotes(), getSettings()]); } }
+  try { [notes, settings] = await Promise.all([getNotes(), getSettings()]); if (isDemo && notes.length === 0 && sessionStorage.getItem(DEMO_SEEDED_SESSION_KEY) !== "1") { await importBundle(SAMPLE_BUNDLE); sessionStorage.setItem(DEMO_SEEDED_SESSION_KEY, "1"); [notes, settings] = await Promise.all([getNotes(), getSettings()]); } }
   catch { root.innerHTML = `<main id="main" class="fatal-error" tabindex="-1"><h1>Your notebook could not open</h1><p>Device storage may be blocked or full. Allow site storage, then reload.</p><button class="button primary" type="button" data-reload>Try again</button></main>`; root.querySelector<HTMLButtonElement>("[data-reload]")?.addEventListener("click", () => location.reload()); return; }
   view = routeView(); render(); updateOnlineState();
   window.addEventListener("online", updateOnlineState); window.addEventListener("offline", updateOnlineState);

@@ -15,10 +15,10 @@
   },
   {
     "id": "search-notes",
-    "claim": "Searches saved setups by the words in the note.",
+    "claim": "Searches saved setups by place, mode, volume, or what you wrote.",
     "where": "History screen, README",
     "test": "npm run test:e2e -- --grep @claim:search-notes",
-    "sandbox": "Use /demo history and search a realistic sample observation; assert exactly the matching note remains."
+    "sandbox": "Use /demo history and search the seeded place, mode, volume, and observation terms; each result leaves exactly its matching note."
   },
   {
     "id": "export-notes",
@@ -82,5 +82,12 @@
     "where": "Home screen, README",
     "test": "npm run test:e2e -- --grep @claim:reminder-fallback",
     "sandbox": "Disable the notification API in demo mode, request a reminder, and assert the reminder text is shown."
+  },
+  {
+    "id": "erase-local-data",
+    "claim": "Erases notes and settings from the current notebook.",
+    "where": "Settings screen, privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:erase-local-data",
+    "sandbox": "In /demo, change the theme and place tabs, erase the sample notebook, then confirm no notes or custom settings remain after reload."
   }
 ]

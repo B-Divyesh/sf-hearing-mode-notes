@@ -23,6 +23,8 @@ The persistent **Demo — sample data** banner contains:
 - **Reset demo** — clears and reseeds only demo:hearing-mode-notes.
 - **Start for real** — clears only demo:hearing-mode-notes, then opens /.
 
+If someone explicitly erases the sample notebook in Settings, that cleared state remains after reload in the current demo tab. **Reset demo** restores the three samples. The session-only `demo:hearing-mode-notes:seeded` marker prevents an erased sample from being silently recreated; it is removed when the person starts for real.
+
 The browser regression test tagged @claim:sample-sandbox saves a real note, enters demo, then returns to prove the real note is still intact.
 
 ## Offline verification

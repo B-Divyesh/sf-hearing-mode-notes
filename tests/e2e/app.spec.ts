@@ -34,11 +34,15 @@ test("@claim:recall-last-setup saves a setup and shows the successful one first"
   await expect(page.getByText("Music", { exact: true })).toBeVisible();
 });
 
-test("@claim:search-notes finds a setup by the words in its note", async ({ page }) => {
+test("@claim:search-notes finds saved setups by place, mode, volume, and note text", async ({ page }) => {
   await page.goto("/demo?view=history");
-  await page.getByLabel("Search notes").fill("quieter corner");
-  await expect(page.locator(".note-entry")).toHaveCount(1);
-  await expect(page.locator(".note-entry")).toContainText("Restaurant");
+  const search = page.getByLabel("Search notes");
+  const searches: Array<[string, string]> = [["Restaurant", "Restaurant"], ["Noise reduction", "Commute"], ["60%", "Work"], ["quieter corner", "Restaurant"]];
+  for (const [term, expectedPlace] of searches) {
+    await search.fill(term);
+    await expect(page.locator(".note-entry")).toHaveCount(1);
+    await expect(page.locator(".note-entry")).toContainText(expectedPlace);
+  }
 });
 
 test("@claim:export-notes exports complete JSON and portable CSV from sample data", async ({ page }) => {
@@ -172,6 +176,25 @@ test("@claim:reminder-fallback shows the saved setup when notifications are unav
   await expect(page.getByRole("status")).toContainText(/Restaurant: Conversation/);
 });
 
+test("@claim:erase-local-data erases the current notebook's notes and settings", async ({ page }) => {
+  await page.goto("/demo?view=settings");
+  await page.getByRole("radio", { name: "Dark" }).check();
+  await page.getByLabel("Add a place tab").fill("Library");
+  await page.getByRole("button", { name: "Add place" }).click();
+  await expect(page.locator(".custom-place-list")).toContainText("Library");
+
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Erase all sample data" }).click();
+  await expect(page.getByRole("status")).toContainText("Sample notebook erased.");
+  await expect(page.getByRole("radio", { name: "System" })).toBeChecked();
+  await expect(page.locator(".custom-place-list")).toHaveCount(0);
+
+  await page.getByRole("link", { name: "History" }).last().click();
+  await expect(page.getByRole("heading", { name: "No saved setups yet" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "No saved setups yet" })).toBeVisible();
+});
+
 test("rejects a malformed branded import without breaking the next launch", async ({ page }) => {
   const malformed = {
     product: "hearing-mode-notes",
@@ -182,7 +205,8 @@ test("rejects a malformed branded import without breaking the next launch", asyn
   };
   await page.goto("/demo?view=settings");
   await page.locator("[data-import]").setInputFiles({ name: "bad.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(malformed)) });
-  await expect(page.getByRole("status")).toContainText("not a supported");
+  await expect(page.locator(".custom-place-list")).toContainText("Community hall");
+  await expect(page.getByRole("radio", { name: "System" })).toBeChecked();
   await page.reload();
   await expect(page.getByRole("heading", { name: "Settings and data" })).toBeVisible();
 });
@@ -216,10 +240,28 @@ test("has no serious or critical accessibility violations in light and dark redu
   expect(dark.violations.filter((violation) => ["serious", "critical"].includes(violation.impact ?? ""))).toEqual([]);
 });
 
-test("keeps branded and footer links at least 44 pixels high on a phone", async ({ page }) => {
-  await page.goto("/demo");
-  const undersized = await page.locator(".brand, .site-footer a").evaluateAll((items) => items.filter((item) => item.getBoundingClientRect().height < 44).map((item) => ({ text: item.textContent, height: item.getBoundingClientRect().height })));
-  expect(undersized).toEqual([]);
+test("keeps every visible public control at least 44 pixels on a phone", async ({ page }) => {
+  const routes = ["/", "/demo", "/history", "/settings", "/privacy", "/terms", "/404.html"];
+  for (const route of routes) {
+    await page.goto(route);
+    await expect(page.locator("main")).toBeVisible();
+    const undersized = await page.locator("a[href], button, input, textarea, select, summary, [role='button'], [role='link']").evaluateAll((items) => items
+      .filter((item) => {
+        const dialog = item.closest("dialog");
+        if (dialog && !dialog.open) return false;
+        const target = item.matches("input, textarea, select") ? item.closest("label") ?? item : item;
+        const rect = target.getBoundingClientRect();
+        const style = getComputedStyle(target);
+        return rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
+      })
+      .map((item) => {
+        const target = item.matches("input, textarea, select") ? item.closest("label") ?? item : item;
+        const rect = target.getBoundingClientRect();
+        return { route: location.pathname, text: target.textContent?.trim() || (item as HTMLInputElement).ariaLabel || item.getAttribute("aria-label"), width: rect.width, height: rect.height };
+      })
+      .filter((item) => item.width < 44 || item.height < 44));
+    expect(undersized).toEqual([]);
+  }
 });
 
 test("sets direct route titles and shows a designed 404 screen", async ({ page }) => {

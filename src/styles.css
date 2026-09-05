@@ -345,6 +345,7 @@ dialog::backdrop { background: rgb(18 21 21 / 58%); backdrop-filter: blur(3px); 
 .legal-page h1 { max-width: 18ch; }
 .legal-page h2 { margin-top: 40px; font-size: 1.45rem; }
 .legal-page p { max-width: 68ch; font-size: 17px; line-height: 1.7; }
+.legal-contact-link { min-height: 44px; margin-inline: -4px; padding-inline: 4px; display: inline-flex; align-items: center; }
 .text-link { display: inline-flex; min-height: 44px; align-items: center; font-weight: 750; }
 .fatal-error { width: min(600px, calc(100% - 40px)); margin: 15vh auto; }
 

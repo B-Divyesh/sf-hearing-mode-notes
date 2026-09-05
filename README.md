@@ -7,7 +7,7 @@ Try the one-click sample at [hearing-mode-notes.sociobot.in/demo](https://hearin
 ## What it does
 
 - Shows the latest successful setup on the home screen.
-- Searches saved setups by the words in the note.
+- Searches saved setups by place, mode, volume, or what you wrote.
 - Exports saved setups as JSON and CSV, then imports a valid Hearing Mode Notes JSON backup.
 - Works offline after the first visit.
 - Keeps notes on your device with no microphone or third-party tracking requests.
@@ -16,6 +16,7 @@ Try the one-click sample at [hearing-mode-notes.sociobot.in/demo](https://hearin
 - Lets you choose light, dark, or system appearance.
 - Lets you add a reusable place tab.
 - Shows the saved setup when notifications are unavailable.
+- Erases notes and settings from the current notebook.
 
 Each statement above is registered and browser-tested in [.factory/claims.json](.factory/claims.json).
 
