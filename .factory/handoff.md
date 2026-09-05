@@ -1,5 +1,22 @@
 # Hearing Mode Notes — verification handoff
 
+## Review 1 status (2026-09-05 UTC)
+
+**FAIL** for implementation candidate `22cbe818b39b24facf2e9aeaf4e0487208a0c659` at <https://hearing-mode-notes.sociobot.in>. The documentation baseline at review start was `e0ee383b8e91f596e35eb9541a3b962f9e2ed377`; later commits were report-only. Full evidence is in `.factory/review-1.md`.
+
+The live HTML, JavaScript, service worker, and manifest byte-match the fresh candidate build. The core save, recall, search, export, delete/Undo, erase, 12-note boundary, reduced-motion, and offline-reload paths work in temporary desktop and phone browser contexts. Five of five fresh offline runs retained their saved setup. Clean local gates pass: `npm run check`, 9/9 unit tests, `npm run build`, 12/12 Playwright tests, dependency audit, and Capacitor sync. Axe CLI reports zero violations, and three completed Lighthouse reports score 99 performance with 0 ms TBT.
+
+Review 1 records **10 findings** and **23 untested public claim families**:
+
+- **High:** no one-click sample sandbox or demo documentation; no claims registry or tagged claim tests; production checkout still returns 404; a branded invalid import still persists corrupt settings and blanks the app.
+- **Medium:** dialog/save focus and place-tag arrow keys; four undersized phone links; unapplied live CSP/permissions/MIME/cache policy; missing Android location permission; incomplete routing/titles/404/metadata; incomplete landing structure and copy evidence.
+
+The previously broken service-worker icon, offline reload, skip-link focus, stale deployment, and current performance gate are resolved. The checkout, corrupt import, focus, touch-target, live-header, and Android-permission findings from verification 3 remain open. `./gradlew assembleDebug` is still unavailable because this worker has no Java/JDK or Android SDK; README explicitly defers the APK and makes no APK claim.
+
+No product code was changed during Review 1. Required next work is listed in `.factory/review-1.md`; rerun every claim command after adding `.factory/claims.json`, then repeat the live demo, purchase, import, route, accessibility, header, and Android checks.
+
+---
+
 ## Independent verification 3 status (2026-08-28 UTC)
 
 **FAIL** for candidate `95caeec06048340b7a99e77bc0dceea7c71141cc` at https://hearing-mode-notes.sociobot.in. Full independent evidence is in `.factory/verification-3.md`.
