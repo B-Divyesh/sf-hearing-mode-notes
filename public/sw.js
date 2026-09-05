@@ -1,4 +1,4 @@
-const CACHE = "hearing-mode-notes-v6";
+const CACHE = "hearing-mode-notes-v7";
 const SHELL = ["/", "/index.html", "/demo", "/history", "/settings", "/privacy", "/terms", "/404.html", "/offline.html", "/manifest.webmanifest", "/icon.svg", "/icon-192.png", "/icon-512.png", "/social-card.webp", "/assets/notebook-hero-480.webp", "/assets/notebook-hero-720.webp", "/assets/notebook-hero-1280.webp"];
 const APP_ROUTES = new Set(["/", "/index.html", "/demo", "/history", "/settings", "/privacy", "/terms", "/404.html"]);
 
