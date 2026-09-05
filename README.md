@@ -1,61 +1,76 @@
 # Hearing Mode Notes
 
-Hearing Mode Notes is a private, offline-first notebook for hearing-aid wearers who want to remember which mode, volume, and seating observation worked at a particular place. It is a memory aid—not a hearing-aid controller, amplifier, hearing test, or source of medical advice.
+Hearing Mode Notes helps hearing-aid wearers remember which setting worked at a particular place. It is a private memory aid, not a hearing-aid controller or medical service.
 
-Live product: <https://hearing-mode-notes.sociobot.in>
+Try the one-click sample at [hearing-mode-notes.sociobot.in/demo](https://hearing-mode-notes.sociobot.in/demo). It loads three realistic notes in a separate local database. Reset the sample or start for real from the persistent demo banner.
 
-## What v1 does
+## What it does
 
-- Saves place, listening mode, volume, free-form observations, and an optional 1–5 sound-comfort rating.
-- Marks successful setups and puts the latest one within a few seconds of the home screen.
-- Searches across place, mode, volume, and notes.
-- Shows a user-requested lock-screen notification for the last successful setup, with a clipboard fallback.
-- Requests optional location only after a user presses the location button; coordinates stay inside the local note.
-- Stores all notes and settings in IndexedDB and works after an offline reload.
-- Exports full JSON backups and portable CSV; imports JSON backups.
-- Supports light, dark, and system themes plus keyboard and screen-reader paths.
-- Offers a useful 12-note free notebook. A ₹399 one-time Sociobot license unlocks unlimited notes and custom place tabs. Export and accessibility are never gated.
+- Shows the latest successful setup on the home screen.
+- Searches saved setups by the words in the note.
+- Exports saved setups as JSON and CSV, then imports a valid Hearing Mode Notes JSON backup.
+- Works offline after the first visit.
+- Keeps notes on your device with no microphone or third-party tracking requests.
+- Requests location only after you press **Add current location**.
+- Does not connect to or control hearing aids.
+- Lets you choose light, dark, or system appearance.
+- Lets you add a reusable place tab.
+- Shows the saved setup when notifications are unavailable.
 
-No microphone permission, analytics, advertising, tracking scripts, runtime CDN, account, or cloud note storage is used.
+Each statement above is registered and browser-tested in [.factory/claims.json](.factory/claims.json).
 
-## Develop and verify
+## Run and verify
 
 Requires Node.js 22+.
 
-```sh
-npm install
+~~~sh
+npm ci
 npm run dev
 npm run check
 npm test
 npm run build
 npm run test:e2e
-```
+npx cap sync android
+npm audit --omit=dev
+~~~
 
-The exact production build command is `npm run build`. Static output lands in `dist/`, including directly addressable `privacy/index.html` and `terms/index.html` routes. It also includes the deployment `_headers` policy: immutable caching for fingerprinted assets, a no-cache service worker, CSP, Permissions-Policy, and the correct web-manifest MIME type.
+The production build is npm run build; it writes the static site to dist/.
 
-Playwright is pinned to 1.58.2. The end-to-end suite starts the production preview itself and covers desktop and 390px mobile layouts, IndexedDB persistence, a fresh service-worker controller plus offline reload, keyboard skip navigation, accessibility, editing/search, legal routes, and the licensed custom-place path.
+Run every public-claim command from a clean checkout with:
+
+~~~sh
+node -e 'for (const claim of require("./.factory/claims.json")) console.log(claim.test)'
+~~~
+
+Then run each printed command. Each command starts a production preview and exercises only /demo.
 
 ## Android project
 
-The app is PWA-first and includes a synced Capacitor project in `android/` with the application ID `in.sociobot.hearingmodenotes` (Android identifiers cannot contain the slug's hyphens). APK compilation and signing are intentionally deferred to the later Android artifact work order.
+The product is PWA-first and includes a Capacitor Android project with application ID in.sociobot.hearingmodenotes.
 
-To refresh the native web bundle after changing the app:
+Refresh the Android web bundle after changes:
 
-```sh
+~~~sh
 npm run build
 npx cap sync android
-```
+~~~
 
-## Data and billing
+APK compilation and signing are deferred to an Android SDK-equipped artifact work order; this repository makes no APK download claim.
 
-Notes use the browser's IndexedDB. Preferences and the optional license token use local browser storage. The checkout link points only to the Sociobot billing API; Sociobot/Dodo is the merchant of record. No product ID or payment-provider secret is embedded.
+## Data, demo, and product boundaries
 
-Privacy details are available at `/privacy`, and purchase/use terms at `/terms`.
+Real notes and sample notes use different IndexedDB databases. Leaving the demo clears its sample database and never reads or writes the real notebook. See [.factory/demo.md](.factory/demo.md) for the exact sandbox contract.
+
+The notebook is intentionally local-first. Purchase registration is documented in the handoff.
+
+Privacy details are available at [/privacy](https://hearing-mode-notes.sociobot.in/privacy), and terms are at [/terms](https://hearing-mode-notes.sociobot.in/terms).
 
 ## Project references
 
 - [Product brief](.factory/brief.json)
 - [Visual thesis and asset provenance](.factory/design.md)
+- [Demo contract](.factory/demo.md)
+- [Public claims and test commands](.factory/claims.json)
 - [Build handoff](.factory/handoff.md)
 
 ## License

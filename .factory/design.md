@@ -13,7 +13,7 @@ The interface passes the two-second test by giving the newest successful setup t
 | Paper / background | `#F4EEDC` | `#181A1B` | Warm recycled paper / charcoal desk |
 | Sheet / surface | `#FFFDF5` | `#232729` | The active notebook leaf |
 | Graphite / text | `#252A2B` | `#F4F0E4` | Main writing |
-| Pencil / muted | `#5F6462` | `#B9BFBC` | Dates and supporting notes |
+| Pencil / muted | `#3F4745` | `#B9BFBC` | Dates and supporting notes |
 | Fountain ink / accent | `#244B75` | `#8FBDE9` | Primary actions and links |
 | Accent contrast | `#FFFFFF` | `#142536` | Text on ink |
 | Coral pencil | `#A83F35` | `#FF9A8E` | Important annotations and destructive actions |
@@ -57,6 +57,7 @@ Prompt sheet:
 - License/provenance: original generated image commissioned for this product; no reference images, brands, or copyrighted characters.
 - Source candidates and exact prompt sidecars live in `assets/src/`; shipped WebP derivatives live in `public/assets/` and remain at or below 300 KB.
 - The hand-authored notebook SVG at `assets/src/app-icon.svg` is the source for the PWA and Android adaptive icons. `assets/icon.png` and `assets/splash.png` are local raster masters generated from it; Capacitor's asset generator produced the light/dark native splash and density-specific Android icons.
+- The social preview is a second original Azure AI Foundry still life generated on 2026-09-05 and centre-cropped to `public/social-card.webp` (1200×630). Its source and exact prompt are recorded in `assets/src/notebook-social-source.json`; it was reviewed for readable text, people, medical symbols, brands, and device-control implications before use.
 
 ## Dark treatment
 

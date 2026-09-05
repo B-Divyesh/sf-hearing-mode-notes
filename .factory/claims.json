@@ -1,0 +1,86 @@
+[
+  {
+    "id": "sample-sandbox",
+    "claim": "Try it with sample data loads three sample notes without changing your notebook.",
+    "where": "Landing action, demo banner, README",
+    "test": "npm run test:e2e -- --grep @claim:sample-sandbox",
+    "sandbox": "Save one real note, open /demo, inspect three seeded notes, then start for real and confirm the real note remains."
+  },
+  {
+    "id": "recall-last-setup",
+    "claim": "Shows the latest successful setup on the home screen.",
+    "where": "Home screen, README",
+    "test": "npm run test:e2e -- --grep @claim:recall-last-setup",
+    "sandbox": "Create a successful demo setup and assert its place, mode, and volume appear in the home recall."
+  },
+  {
+    "id": "search-notes",
+    "claim": "Searches saved setups by the words in the note.",
+    "where": "History screen, README",
+    "test": "npm run test:e2e -- --grep @claim:search-notes",
+    "sandbox": "Use /demo history and search a realistic sample observation; assert exactly the matching note remains."
+  },
+  {
+    "id": "export-notes",
+    "claim": "Exports saved setups as JSON and CSV.",
+    "where": "Settings screen, README",
+    "test": "npm run test:e2e -- --grep @claim:export-notes",
+    "sandbox": "Download both demo exports, parse JSON, and inspect the CSV header and one row per sample note."
+  },
+  {
+    "id": "import-notes",
+    "claim": "Imports a valid Hearing Mode Notes JSON backup.",
+    "where": "Settings screen, README",
+    "test": "npm run test:e2e -- --grep @claim:import-notes",
+    "sandbox": "Upload a complete bundled JSON fixture in /demo and confirm its saved place appears in history."
+  },
+  {
+    "id": "offline-reload",
+    "claim": "Works offline after the first visit.",
+    "where": "Landing facts, README",
+    "test": "npm run test:e2e -- --grep @claim:offline-reload",
+    "sandbox": "Use a dedicated browser context, wait for the worker to control /demo, go offline, reload, and assert sample output remains."
+  },
+  {
+    "id": "private-local-notes",
+    "claim": "Keeps notes on your device with no microphone or third-party tracking requests.",
+    "where": "Privacy section, privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:private-local-notes",
+    "sandbox": "Instrument microphone access and record all network requests during a demo history flow; assert zero microphone calls and only the product origin."
+  },
+  {
+    "id": "optional-location",
+    "claim": "Requests location only after you press Add current location.",
+    "where": "Landing facts, note form, privacy page",
+    "test": "npm run test:e2e -- --grep @claim:optional-location",
+    "sandbox": "Instrument geolocation, open a demo note, assert no call before the button, then assert one call after it."
+  },
+  {
+    "id": "no-device-control",
+    "claim": "Does not connect to or control hearing aids.",
+    "where": "Privacy and limits, terms, README",
+    "test": "npm run test:e2e -- --grep @claim:no-device-control",
+    "sandbox": "Instrument the browser device-connection API during a representative demo flow and assert no connection request occurs."
+  },
+  {
+    "id": "theme-choice",
+    "claim": "Lets you choose light, dark, or system appearance.",
+    "where": "Settings screen, README",
+    "test": "npm run test:e2e -- --grep @claim:theme-choice",
+    "sandbox": "Select each setting in demo Settings and assert the document theme state changes to that exact choice."
+  },
+  {
+    "id": "custom-place-tabs",
+    "claim": "Lets you add a reusable place tab.",
+    "where": "Settings screen, README",
+    "test": "npm run test:e2e -- --grep @claim:custom-place-tabs",
+    "sandbox": "Add a named place in demo Settings, open a new note, and assert the new tab is available."
+  },
+  {
+    "id": "reminder-fallback",
+    "claim": "Shows the saved setup when notifications are unavailable.",
+    "where": "Home screen, README",
+    "test": "npm run test:e2e -- --grep @claim:reminder-fallback",
+    "sandbox": "Disable the notification API in demo mode, request a reminder, and assert the reminder text is shown."
+  }
+]

@@ -1,5 +1,5 @@
-const CACHE = "hearing-mode-notes-v3";
-const SHELL = ["/", "/index.html", "/offline.html", "/manifest.webmanifest", "/icon.svg", "/icon-192.png", "/icon-512.png", "/assets/notebook-hero-480.webp", "/assets/notebook-hero-720.webp", "/assets/notebook-hero-1280.webp"];
+const CACHE = "hearing-mode-notes-v4";
+const SHELL = ["/", "/index.html", "/demo", "/history", "/settings", "/privacy", "/terms", "/404.html", "/offline.html", "/manifest.webmanifest", "/icon.svg", "/icon-192.png", "/icon-512.png", "/social-card.webp", "/assets/notebook-hero-480.webp", "/assets/notebook-hero-720.webp", "/assets/notebook-hero-1280.webp"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
@@ -28,13 +28,17 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== location.origin) return;
   if (event.request.mode === "navigate") {
     event.respondWith((async () => {
+      // The shell is route-aware in the client, so the cached root safely serves
+      // every notebook route without risking an offline navigation failure.
+      const cache = await caches.open(CACHE);
+      const shell = await cache.match("/index.html");
+      if (shell) return shell;
       try {
         const fresh = await fetch(event.request);
-        const cache = await caches.open(CACHE);
         cache.put(event.request, fresh.clone());
         return fresh;
       } catch {
-        return (await caches.match(event.request, { ignoreVary: true })) || (await caches.match("/index.html")) || caches.match("/offline.html");
+        return (await cache.match(event.request, { ignoreVary: true })) || (await cache.match("/offline.html"));
       }
     })());
     return;

@@ -1,6 +1,6 @@
 import "fake-indexeddb/auto";
 import { beforeEach, describe, expect, it } from "vitest";
-import { clearAllData, getNotes, importBundle, makeExport, saveNote, toCsv, validateImport } from "../../src/storage";
+import { clearAllData, getNotes, getSettings, importBundle, makeExport, saveNote, saveSettings, toCsv, validateImport } from "../../src/storage";
 import type { SetupNote } from "../../src/types";
 
 const note: SetupNote = {
@@ -33,6 +33,37 @@ describe("local notebook", () => {
 
   it("rejects unrelated imports", () => {
     expect(() => validateImport({ product: "something-else", notes: [] })).toThrow(/not a supported/);
+  });
+
+  it("rejects malformed settings before changing an existing notebook", async () => {
+    await saveNote(note);
+    await saveSettings({ theme: "light", customPlaces: ["Library"] });
+    const malformed = {
+      ...makeExport([{ ...note, id: "imported" }], { theme: "dark", customPlaces: ["Hall"] }),
+      settings: { theme: "invalid", customPlaces: null }
+    };
+
+    expect(() => validateImport(malformed)).toThrow(/not a supported/);
+    await expect(importBundle(malformed as never)).rejects.toThrow(/not a supported/);
+    expect(await getNotes()).toEqual([note]);
+    expect(await getSettings()).toEqual({ theme: "light", customPlaces: ["Library"] });
+  });
+
+  it("filters corrupt local records so the notebook can recover on launch", async () => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open("hearing-mode-notes");
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction("notes", "readwrite");
+      tx.objectStore("notes").put({ id: "bad", place: "Home", customPlaces: null });
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+
+    expect(await getNotes()).toEqual([]);
   });
 
   it("quotes CSV fields", () => {
