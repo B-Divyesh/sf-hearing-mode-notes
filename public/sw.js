@@ -1,5 +1,6 @@
-const CACHE = "hearing-mode-notes-v4";
+const CACHE = "hearing-mode-notes-v6";
 const SHELL = ["/", "/index.html", "/demo", "/history", "/settings", "/privacy", "/terms", "/404.html", "/offline.html", "/manifest.webmanifest", "/icon.svg", "/icon-192.png", "/icon-512.png", "/social-card.webp", "/assets/notebook-hero-480.webp", "/assets/notebook-hero-720.webp", "/assets/notebook-hero-1280.webp"];
+const APP_ROUTES = new Set(["/", "/index.html", "/demo", "/history", "/settings", "/privacy", "/terms", "/404.html"]);
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
@@ -28,17 +29,22 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== location.origin) return;
   if (event.request.mode === "navigate") {
     event.respondWith((async () => {
-      // The shell is route-aware in the client, so the cached root safely serves
-      // every notebook route without risking an offline navigation failure.
       const cache = await caches.open(CACHE);
-      const shell = await cache.match("/index.html");
-      if (shell) return shell;
+      // App routes are precached so an offline reload never depends on a
+      // network race. Unknown routes still reach the server while online,
+      // preserving an upstream 404 instead of turning it into the shell.
+      if (APP_ROUTES.has(url.pathname)) {
+        const cached = await cache.match(event.request, { ignoreVary: true });
+        if (cached) return cached;
+      }
       try {
         const fresh = await fetch(event.request);
-        cache.put(event.request, fresh.clone());
+        if (fresh.ok) cache.put(event.request, fresh.clone());
         return fresh;
       } catch {
-        return (await cache.match(event.request, { ignoreVary: true })) || (await cache.match("/offline.html"));
+        // An offline reload can use a route copy or the cached app shell. Online
+        // requests always preserve the server's status, including real 404s.
+        return (await cache.match(event.request, { ignoreVary: true })) || (await cache.match("/index.html")) || (await cache.match("/offline.html"));
       }
     })());
     return;

@@ -229,6 +229,23 @@ test("sets direct route titles and shows a designed 404 screen", async ({ page }
   await expect(page.getByRole("heading", { name: "This page was not found" })).toBeVisible();
 });
 
+test("keeps a server 404 after the service worker takes control", async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  try {
+    await page.goto("/demo");
+    await page.waitForFunction(async () => {
+      const registration = await navigator.serviceWorker?.getRegistration();
+      return Boolean(registration?.active && navigator.serviceWorker?.controller);
+    });
+    const response = await page.goto("/__e2e-upstream-404");
+    expect(response?.status()).toBe(404);
+    await expect(page.getByRole("heading", { name: "Upstream page missing" })).toBeVisible();
+  } finally {
+    await context.close();
+  }
+});
+
 test("moves focus and announces the new page after in-app navigation", async ({ page }) => {
   await page.goto("/demo");
   await page.getByRole("link", { name: "History" }).last().click();
