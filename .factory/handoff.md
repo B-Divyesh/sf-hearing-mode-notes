@@ -1,100 +1,91 @@
-# Hearing Mode Notes — verification handoff
+# Hearing Mode Notes repair handoff
 
-## Review 1 status (2026-09-05 UTC)
+Date: 2026-09-05
 
-**FAIL** for implementation candidate `22cbe818b39b24facf2e9aeaf4e0487208a0c659` at <https://hearing-mode-notes.sociobot.in>. The documentation baseline at review start was `e0ee383b8e91f596e35eb9541a3b962f9e2ed377`; later commits were report-only. Full evidence is in `.factory/review-1.md`.
+## Product and first screen
 
-The live HTML, JavaScript, service worker, and manifest byte-match the fresh candidate build. The core save, recall, search, export, delete/Undo, erase, 12-note boundary, reduced-motion, and offline-reload paths work in temporary desktop and phone browser contexts. Five of five fresh offline runs retained their saved setup. Clean local gates pass: `npm run check`, 9/9 unit tests, `npm run build`, 12/12 Playwright tests, dependency audit, and Capacitor sync. Axe CLI reports zero violations, and three completed Lighthouse reports score 99 performance with 0 ms TBT.
+Job: remember which hearing-aid listening setup worked in a particular place.
 
-Review 1 records **10 findings** and **23 untested public claim families**:
+Audience: hearing-aid wearers who need a quick private record of place-specific settings.
 
-- **High:** no one-click sample sandbox or demo documentation; no claims registry or tagged claim tests; production checkout still returns 404; a branded invalid import still persists corrupt settings and blanks the app.
-- **Medium:** dialog/save focus and place-tag arrow keys; four undersized phone links; unapplied live CSP/permissions/MIME/cache policy; missing Android location permission; incomplete routing/titles/404/metadata; incomplete landing structure and copy evidence.
+First action: **Try it with sample data**. It opens `/demo`, immediately shows three realistic saved setups, and explains that the sample is separate from the person's notebook.
 
-The previously broken service-worker icon, offline reload, skip-link focus, stale deployment, and current performance gate are resolved. The checkout, corrupt import, focus, touch-target, live-header, and Android-permission findings from verification 3 remain open. `./gradlew assembleDebug` is still unavailable because this worker has no Java/JDK or Android SDK; README explicitly defers the APK and makes no APK claim.
+## Implementation
 
-No product code was changed during Review 1. Required next work is listed in `.factory/review-1.md`; rerun every claim command after adding `.factory/claims.json`, then repeat the live demo, purchase, import, route, accessibility, header, and Android checks.
+Deployed implementation commit: `e88fdaa1402039e1c10c9d3caf64b960e09cb5c7`
 
----
+Later verification-only commit: `911002c878e6e493a370aa1e7f380a99e004a28b` (it makes the offline browser check wait for the cached document; it does not change the deployed product image).
 
-## Independent verification 3 status (2026-08-28 UTC)
+This repair adds an isolated one-click demo, outcome-based public-claim tests, strict import validation, recovery from malformed local records, accessible dialog and route focus handling, direct static routes with route metadata, a real 404 response page, a deployed-header configuration, and a completed local-first PWA path.
 
-**FAIL** for candidate `95caeec06048340b7a99e77bc0dceea7c71141cc` at https://hearing-mode-notes.sociobot.in. Full independent evidence is in `.factory/verification-3.md`.
+- `/demo` and `/?demo=1` use IndexedDB database `demo:hearing-mode-notes`; real notes use `hearing-mode-notes`.
+- The persistent demo banner offers **Reset demo** and **Start for real**. Reset only reseeds the demo database; leaving demo clears only that database.
+- The sample contains Restaurant, Commute, and Work records. It has no access to real notes.
+- Imports are fully validated before one atomic transaction. Invalid files cannot replace valid data; malformed stored records are ignored during recovery.
+- The app has route-specific static and dynamic titles, descriptions, canonicals, social metadata, sitemap entries, a designed 404, security headers, and direct route HTML for crawler-safe deep links.
+- The unavailable paid checkout was removed rather than represented by a broken link. The free product remains complete.
 
-Fresh verification confirms the live HTML, JS, CSS, service worker, manifest, icon, privacy, and terms outputs byte-match the clean candidate build. The earlier stale deployment is resolved, `hearing-mode-notes-v3` controls a fresh browser, and a saved setup reloads offline.
+The catalog description is in `.factory/catalog-description.txt` and has been copied to `/work/.evidence/catalog-description.txt`.
 
-Release blockers and material defects remain:
+## Earlier review disposition
 
-- **High:** the production Sociobot checkout returns HTTP 404, so the visible one-time unlock cannot be purchased.
-- **High:** a correctly branded but structurally invalid JSON import can persist `customPlaces: null`; every later launch throws `customPlaces is not iterable` and renders a blank app until site data is cleared externally.
-- **Medium:** closing the note dialog leaves focus on a hidden control, saving leaves focus on `<body>`, and four measured mobile links are below 44px high.
-- **Medium:** the live host does not apply the shipped CSP, Permissions-Policy, manifest MIME, immutable asset caching, or no-cache service-worker policy.
-- **Medium:** three live Lighthouse mobile runs scored 87/91/90 with TBT 474/359/376ms, missing the repeatable performance/TBT gate.
-- **Medium:** the Android manifest has no location permission even though the packaged web UI advertises optional current location.
+| Review finding | Current disposition |
+| --- | --- |
+| No tryable sample and no isolated demo | Fixed with `/demo`, three seeded records, persistent label, reset, start-for-real, and separate IndexedDB namespaces. |
+| No claims manifest or independently runnable proof | Fixed with 12 public claims in `.factory/claims.json`; each has one tagged browser outcome check. |
+| Broken external checkout | Fixed honestly by removing the purchase UI and price promise. Sociobot billing registration is a named external dependency below. |
+| Corrupt import could blank the app | Fixed with schema validation, an atomic write transaction, malformed-record filtering, and unit/browser recovery checks. |
+| Dialog focus and place-tag arrow keys | Fixed with trigger restoration, post-save focus, Escape handling, Home/End/arrow movement, and an outcome test. |
+| Small branded/footer phone targets | Fixed at 44 px minimum and checked on the 390 px project. |
+| Required headers/config did not match the deployed host | Fixed with `staticwebapp.config.json`, copied to `dist/`, including CSP, Permissions-Policy, Referrer-Policy, MIME/cache rules, and a response-level 404 override. |
+| Android location permission missing | Fixed with coarse and fine location declarations only; no microphone permission is declared. |
+| Missing direct routes, titles, metadata, sitemap, and designed 404 | Fixed with generated route files, per-route metadata, `sitemap.xml`, `robots.txt`, social card, and a true HTTP 404 configuration. |
+| Landing content, plain language, and audit incomplete | Fixed with a job-named headline, audience sentence, first action, three facts, and `.factory/copy-audit.md`. |
 
-Clean local results: `npm ci` PASS (0 vulnerabilities), `npm run check` PASS, `npm test` PASS (9/9), `npm run build` PASS, `npm run test:e2e` PASS (12/12 desktop/mobile), `npm audit --omit=dev` PASS, and `npx cap sync android` PASS. No lint command exists. `./gradlew assembleDebug` could not run because this worker has no Java/JDK or Android SDK; no APK was claimed. No product code was changed during verification.
+## Verification
 
----
-
-## Earlier builder repair handoff (historical)
-
-### Repair status (2026-08-28 UTC)
-
-All release-blocking findings from independent verification report `.factory/verification-2.md` for candidate `781ffe6ec9810e07e7494da0f0fdb5c59f8ca230` were reproduced and repaired.
-
-- The original failure was reproduced from a clean build: `dist/icon.svg` was absent while `sw.js` precached `/icon.svg`. The authored SVG now ships at `public/icon.svg`, so Vite emits `dist/icon.svg`; the service-worker cache was bumped from `hearing-mode-notes-v2` to `v3` and the manifest start URL from `?v=1` to `?v=2`.
-- The skip target is now a programmatically focusable `<main tabindex="-1">`; activating the skip link explicitly transfers focus into it. This also fixes view-change focus placement.
-- Startup no longer performs an unconditional second full render after an empty license check. License reconciliation is deferred and rerenders only when visible license state changes. Three fresh simulated-mobile Lighthouse runs scored 98/98/98, with TBT 0/60/0 ms.
-- `public/_headers` is emitted to `dist/_headers` as the static deployment policy: immutable one-year caching for hashed assets/icons, no-cache service worker, CSP, Permissions-Policy, `nosniff`, strict referrer policy, and the correct `application/manifest+json` manifest MIME type.
-
-The previous independent result remains recorded in `.factory/verification-2.md` as the source finding; it is not the status of this repair candidate.
-
-## Shipped
-
-- A production Vite + TypeScript PWA in `dist/`, designed as a product-specific handwritten listening field notebook.
-- Local-first setup records in IndexedDB: one-tap/default or licensed custom place tags, mode, volume, optional detail, manual 1–5 comfort, optional user-requested coordinates, successful-setup flag, and timestamps.
-- Home recall of the latest successful setup and successful setups by place; searchable history; edit; confirmed delete with Undo.
-- User-requested lock-screen/browser notification of a successful setup, with clipboard/on-screen fallback when notifications are unavailable.
-- JSON backup/import and CSV export. These, core accessibility, reminder behavior, and the useful 12-note free tier are never paywalled.
-- ₹399 one-time unlock through the Sociobot checkout/verify contract. The token is captured from the return URL, stored at `sb_license:hearing-mode-notes`, verified no more than daily, restored by paste, and handled optimistically offline. No payment provider or product ID is embedded.
-- Light, dark, and system themes; mobile bottom navigation; keyboard/focus states; reduced motion; empty, no-result, storage-error, offline, license-error, location-error, and update states.
-- Installable PWA manifest, responsive 192/512 icons, versioned service-worker shell cache, runtime caching, offline fallback, update toast, direct `/privacy` and `/terms` outputs, robots file, and sitemap.
-- Capacitor Android project under `android/`, synced to the final web build with bespoke adaptive icons and light/dark splash assets. Android package names cannot contain hyphens, so the slug maps to `in.sociobot.hearingmodenotes`.
-- Original Azure AI Foundry hero illustration, responsive WebP derivatives, exact prompt sidecars, and full provenance in `.factory/design.md`.
-
-## Verification (repair candidate, 2026-08-28 UTC)
-
-Commands run from a clean dependency install workflow:
+Clean dependency install was run with `npm ci`. Final checks:
 
 ```sh
-npm ci
-npm run check
-npm test
-npm run build
-npm run test:e2e
-npx cap sync android
-npm audit --omit=dev
+npm run check              # pass
+npm test                   # 9 passing unit tests
+npm run build              # pass; writes dist/
+npm run test:e2e           # 38 passing checks, desktop and 390 px phone
+npx cap sync android       # pass
+npm audit --omit=dev       # 0 vulnerabilities
 ```
 
-Results:
+Every command listed in `.factory/claims.json` was also executed separately after the clean install; all 12 passed in both browser projects. The suite uses a fresh browser context for the offline reload claim and confirms the service worker controls `/demo` before going offline.
 
-- TypeScript: passed with no errors.
-- Vitest: 9/9 unit tests passed, including release regression assertions for the emitted favicon/service-worker contract and static response policy.
-- Playwright 1.58.2: 12/12 passed in desktop Chromium and an exact 390×844 mobile viewport. Coverage includes save/recall/search/edit, fresh service-worker activation/controller, production-icon MIME/content, offline reload with persisted IndexedDB data, direct legal routes, licensed custom place tags, skip-link keyboard focus, and axe scans in light and dark/reduced-motion modes.
-- Axe: no serious or critical violations in either tested theme. The keyboard regression proves first Tab reaches the skip link and Enter focuses `main#main`.
-- Offline/update: a fresh worker is active and controls the page before offline mode is enabled; `context.setOffline(true)` reload retains the saved setup and shows the offline state. `sw.js` uses a new versioned `hearing-mode-notes-v3` cache, claims clients, and continues to expose the in-app update message path.
-- Privacy/network review: no third-party runtime request, analytics, microphone, passive location, or CDN asset was introduced. The only external endpoint remains the user-initiated Sociobot license checkout/verification API.
-- Response-policy review: `dist/_headers` contains CSP, Permissions-Policy, manifest MIME, no-cache service-worker handling, and immutable cache policy for `/assets/*`.
-- `npm audit --omit=dev`: 0 vulnerabilities.
-- Static build: JavaScript 34.56 KB (11.87 KB gzip); CSS 23.63 KB (5.81 KB gzip); mobile hero 17 KB; large hero 160 KB. All are within the 200 KB JS, 50 KB CSS, and 300 KB hero budgets.
-- Lighthouse 12.8.2 mobile (three fresh simulated runs): Performance 98/98/98; FCP 0.9/0.9/0.9 s; LCP 2.4/2.4/2.4 s; TBT 0/60/0 ms; CLS 0/0/0. This clears the ≥90 performance and <200 ms TBT gates.
-- `npm run build` reproducibly places `index.html` at `dist/index.html`, with `dist/privacy/index.html` and `dist/terms/index.html` for static hosting.
-- `npx cap sync android` passed, copying the repaired web consumer bundle into the Capacitor project. `java` is not installed in this static-deploy worker, so no APK build was attempted; this is unchanged from the work order's later-APK scope.
+The browser suite additionally covers malformed import recovery, keyboard/dialog focus, tag arrows, dark and reduced-motion axe scans with no serious or critical violations, phone target sizes, route titles, designed 404 rendering, a real upstream 404 after service-worker control, and route focus/announcement.
 
-## Known gaps / next work order
+`/opt/fleet/lib/verify-url.sh http://127.0.0.1:4173/demo /work/.evidence/verify-local` passed: 200, title, `lang`, one h1, main landmark, no missing image alt text, no unlabeled buttons, and no console errors. Axe is integrated in Playwright because the container has no standalone chromedriver.
 
-- Historical deployment note: this repair initially had not reached the host. Independent verification 3 above confirms it is now deployed and that the service worker/offline path works.
-- Per the work order, this build includes and syncs the Android Capacitor project but does not compile or sign an APK. The later Android artifact work order should run the Gradle build in an SDK-equipped environment and use the factory keystore; no keystore is committed.
-- The factory still needs to register the `hearing-mode-notes` billing product and confirm the chosen ₹399 production price/return URL before launch. The client already uses the required slug-based production endpoints.
-- Notification persistence and exact lock-screen placement are controlled by the browser/Android OS. The app says this plainly and provides a clipboard/on-screen fallback.
-- Optional coordinates are deliberately raw and local. There is no background geofencing or automatic place detection because that would expand the privacy surface beyond the brief.
+Mobile Lighthouse on `/demo`, using the worker's Chromium headless shell, scored Performance 99, Accessibility 100, Best Practices 100, SEO 100. It measured LCP 2.1 s, CLS 0, TBT 0 ms, and 218 KiB total transfer. The report is `/work/.evidence/lighthouse-mobile-final.json`.
+
+`./gradlew assembleDebug` was attempted. It cannot run in this static-deploy worker because no Java/JDK is installed (`JAVA_HOME` and `java` are absent). The Capacitor project and synced web bundle are present; this product makes no APK download claim.
+
+## Assets and privacy
+
+The social card is a 1200×630 WebP derivative of an original Azure AI Foundry notebook still life. Prompt, date, generator, and review constraints are in `assets/src/notebook-social-source.json` and `.factory/design.md`. It contains no people, brands, readable text, medical symbol, or device-control implication.
+
+There are no analytics, CDNs, third-party scripts, microphone access, background location access, or backend data store. Location is requested only after the person presses the contextual button. The app does not connect to or control hearing devices.
+
+## Deployment and live verification
+
+The implementation image `e88fdaa1402039e1c10c9d3caf64b960e09cb5c7` was pushed and deployed successfully with the durable static deployment configuration. The product remains a one-replica static app and uses no backend or volume.
+
+Cold HTTPS checks passed after deployment:
+
+- `/`, `/demo`, `/privacy`, and `/terms` return 200. An unknown route returns HTTP 404 and renders the designed not-found page.
+- `/manifest.webmanifest` returns `application/manifest+json`; `/sw.js` returns `text/javascript` with `Cache-Control: no-cache`.
+- The live response has HTTPS/HSTS, CSP, `X-Content-Type-Options`, Referrer-Policy, and the intended Permissions-Policy. No console errors or warnings were observed on fresh desktop or 390 px phone loads.
+- `verify-url.sh` passed against `https://hearing-mode-notes.sociobot.in/demo`: 200, route title, `lang`, one h1, main, complete image alt text, labeled controls, and no console errors.
+- Fresh desktop and phone contexts inspected the first screen before scrolling. Both showed the job heading, hearing-aid-wearer audience sentence, and **Try it with sample data** first action. The sample banner remained visible and History contained three realistic notes.
+- On desktop, a real note was created, demo was opened, **Reset demo** restored exactly three sample notes, and **Start for real** retained the real note. The demo never changed real IndexedDB data.
+- A fresh service-worker context reloaded `/demo` offline with the sample visible. A separate worker-controlled context navigated to an unknown live URL and received HTTP 404 with the not-found page.
+- Live axe scans on demo desktop and phone found zero serious or critical violations.
+
+## Known dependency
+
+The researched brief describes an eventual one-time purchase, but no Sociobot billing product is registered for this product in the provided scope. There is deliberately no broken checkout, mock payment, price, or paid gate. If a later work order registers it, use the Sociobot billing API/hosted checkout contract and keep export, privacy, and core notes free.
