@@ -92,7 +92,9 @@ test("@claim:offline-reload works offline after the first visit", async ({ brows
     });
     await page.evaluate(() => { (window as unknown as { __reloadMarker: boolean }).__reloadMarker = true; });
     await context.setOffline(true);
-    await page.reload().catch(() => undefined);
+    // Chromium can report an offline navigation event before the worker's
+    // cached document finishes parsing, so wait for that document when present.
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 10_000 }).catch(() => undefined);
     await expect.poll(() => page.evaluate(() => (window as unknown as { __reloadMarker?: boolean }).__reloadMarker ?? false)).toBe(false);
     await expect(page.getByRole("heading", { name: "Setup for Restaurant" })).toBeVisible();
     await expect(page.getByLabel("Demo mode")).toBeVisible();
