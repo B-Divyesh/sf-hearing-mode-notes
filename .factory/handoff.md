@@ -1,66 +1,70 @@
-# Hearing Mode Notes review 3 handoff
+# Hearing Mode Notes repair 4 handoff
 
 Date: 2026-09-06 UTC
 
 ## Result
 
-**FAIL — 1 finding and 0 untested public claims.**
+**PASS — 0 open findings and 0 untested public claims.**
 
-- Implementation reviewed: `259a36a04489fcef97900ffa2cef034374acfeeb`
-- Documentation baseline: `681ee36f416c1976ee2197655c4244f9ec20b10f`
+- Implementation SHA: `2810c7061ae9623819d0fceb41509aff174b9ace`
+- Previous strict-review baseline: `0f00e1152117be838a0a71ea89cef2f69400b344`
 - Live product: <https://hearing-mode-notes.sociobot.in>
-- Full report: [review-3.md](review-3.md)
+- The documentation commit is separate from the implementation SHA; no product source changed after the implementation commit above.
 
-No product code was changed. This review changes only review and handoff documentation.
+## What changed
 
-## Finding to repair
+The first offline reload is now deterministic at the service-worker boundary.
 
-R3-01 (Medium): offline reload is unreliable at the first ready boundary. The first clean full suite failed the phone offline claim and a rerun passed. Repeating that claim five times per project produced 9/10 passes. Ten fresh live phone contexts failed when taken offline immediately after an active controller appeared; five runs delayed by 100–2,000 ms all passed.
+- The build writes the exact Vite JavaScript and CSS filenames into the production service worker. The worker precaches that complete shell atomically instead of discovering filenames by parsing HTML during installation.
+- The worker reports whether the document, demo route, JavaScript, and CSS are all in cache. The app exposes a plain **Offline ready** status only after that acknowledgement.
+- The outcome-based offline claim waits for that visible ready condition, takes its own browser context offline immediately, reloads the demo, and checks the real sample screen and its persistent demo label.
+- The demo instructions and copy audit record the new readiness state. The catalog description remains verb-first, 68 bytes, and is copied to `/work/.evidence/catalog-description.txt`.
 
-Make offline readiness deterministic, then repeat the full suite and fresh phone offline transitions with no failures.
+No product scope changed. Notes remain local-first; the app does not control hearing aids, use the microphone, or provide medical advice.
 
-## What passed
+## First screen
 
-- Fresh desktop and phone sessions showed the job, audience, and sample action before scrolling.
-- One-click sample entry, persistent sample label, three populated records, reset, exit, and real/demo isolation passed.
-- Normal save/reload, required fields, 60-character boundary, special characters, denied location, search/no-results, delete/cancel/undo, invalid import, and blocked-storage recovery passed.
-- Keyboard focus, Arrow keys, route announcements, browser Back scroll restoration, 200% text, reduced motion, and 44 px targets passed.
-- Fresh desktop and phone axe scans found no serious or critical issues. `verify-url.sh` passed.
-- Privacy instrumentation found no microphone use, device connection, third-party request, analytics, or note sync. Location ran only after its button.
-- Route titles, legal pages, links, sitemap, manifest, security headers, cache headers, and designed HTTP 404 passed.
-- The clean candidate build byte-matched the live deployment.
-- All earlier findings are resolved; R3-01 is new.
+- Job: remember hearing-aid settings by place.
+- Audience: hearing-aid wearers who need a private record of which setup worked in each place.
+- First action: **Try it with sample data**. It loads three realistic sample notes.
 
-## Clean verification
+Fresh 1440×900 desktop and 390×844 phone sessions showed all three before scrolling. The live screenshots are in `/work/.evidence/hearing-mode-notes-repair-4/live/`.
 
-From the detached candidate checkout:
+## Verification
 
-```sh
-npm ci
-npm run check
-npm test
-npm run build
-npm run test:e2e
-npm audit --omit=dev
-npx cap sync android
-```
+All commands below ran from a separate clean worktree at the implementation SHA after `npm ci`:
 
-Results: 9/9 unit tests, successful production build, 0 production vulnerabilities, and successful Capacitor sync. The first full E2E run was 39/40 because the phone offline test failed; its rerun was 40/40. All 13 exact claim commands passed once for 26/26 project runs. The offline claim repeat was 9/10 and is the finding.
+| Check | Result |
+| --- | --- |
+| `npm run check` | PASS |
+| `npm test` | PASS — 9/9 unit tests |
+| `npm run build` | PASS — production `dist/` generated |
+| `npm run test:e2e` | PASS — 40/40 desktop and 390 px phone browser checks |
+| All 13 commands in `.factory/claims.json`, run separately | PASS — 26/26 project runs |
+| Phone `@claim:offline-reload --repeat-each=10` | PASS — 10/10 fresh first-activation offline reloads |
+| `npm audit --omit=dev` | PASS — 0 production vulnerabilities |
+| `npx cap sync android` | PASS — web assets and Android plugins synchronized |
 
-Fresh mobile Lighthouse scored 99 performance, 100 accessibility, 100 best practices, and 100 SEO. FCP was 0.91 s, LCP 1.96 s, TBT 0 ms, CLS 0, and transfer 230,448 bytes.
+The clean command setup also confirmed the generated worker contains the exact hashed JavaScript and CSS filenames. The full local repeat across desktop and phone was 20/20.
 
-## Evidence
+## Live verification
 
-- `/work/.evidence/review-3/live/desktop-first-screen.png`
-- `/work/.evidence/review-3/live/phone-first-screen.png`
-- `/work/.evidence/review-3/live/desktop-audit.json`
-- `/work/.evidence/review-3/live/phone-routes-audit.json`
-- `/work/.evidence/review-3/live/offline-repeat-10.json`
-- `/work/.evidence/review-3/live/offline-repeat-delay.json`
-- `/work/.evidence/review-3/live/lighthouse-mobile.json`
-- `/work/.evidence/review-3/claims/`
-- `/work/.evidence/review-3/clean/`
+- Deployed the static `dist/` with the product’s existing Static Web Apps configuration. Live `sw.js`, index JavaScript, CSS, generated route shells, manifest, and icon match the implementation build byte-for-byte.
+- Ten fresh HTTPS phone contexts waited for **Offline ready**, went offline immediately, reloaded `/demo`, and all showed the Restaurant setup and persistent Demo label: **10/10 passed** with no console errors.
+- The one-click demo showed three populated notes and its persistent label. Adding a temporary fourth sample, resetting, and returning to real mode left the separate real Home note intact.
+- `verify-url.sh` passed on live `/demo`: 200 response, route title, `lang`, one `h1`, one `main`, complete image alternatives, labelled buttons, and no load errors.
+- Fresh live axe scans found 0 violations on desktop light and phone dark/reduced-motion contexts.
+- All six normal public routes returned 200 with route-specific titles, one `h1`, and one `main`. An unknown route returned the designed page with HTTP 404; this expected 404 is not a defect.
+- Privacy request recording during the demo found only `hearing-mode-notes.sociobot.in`; no third-party request or console error appeared. The service worker remained activated after `registration.update()`.
+- Live mobile Lighthouse: Performance 99, Accessibility 100, Best Practices 100, SEO 100; FCP 0.9 s, LCP 2.0 s, TBT 0 ms, CLS 0, transfer 225 KiB. Report: `/work/.evidence/hearing-mode-notes-repair-4/lighthouse-mobile.json`.
 
-## External limitation
+## Earlier findings
 
-APK compilation cannot run in this worker because Java and the Android SDK are absent. The Capacitor project syncs, and the public product makes no APK download claim.
+All earlier issues remain resolved: worker installation and deployment identity; skip-link focus; performance; isolated demo and claim coverage; malformed import recovery; dialog focus and place-tab keys; 44 px touch targets; response headers and cache policy; Android location permissions; direct routes, metadata, sitemap, and designed 404; landing copy and structure; four-field search coverage; and persistent local-data erasure.
+
+R3-01 is now resolved by the atomic cache manifest and explicit offline-ready acknowledgement described above.
+
+## Known limitations
+
+- The researched one-time purchase remains an external billing-registration dependency. No price, checkout, paid gate, or purchase promise is public; the complete free local notebook remains available.
+- This worker has no Java/Android SDK, so `assembleDebug` was not run. Capacitor sync succeeds and the public product makes no APK download or installed-artifact claim.
