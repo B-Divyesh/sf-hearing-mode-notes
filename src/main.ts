@@ -27,6 +27,7 @@ let lastDeleted: SetupNote | null = null;
 let noteOpener: HTMLElement | null = null;
 let saveClosingDialog = false;
 let offlineReady = false;
+const hadServiceWorkerControllerAtLoad = "serviceWorker" in navigator && navigator.serviceWorker.controller !== null;
 
 const SAMPLE_BUNDLE: ExportBundle = {
   product: "hearing-mode-notes",
@@ -372,7 +373,7 @@ async function init(): Promise<void> {
   window.addEventListener("online", updateOnlineState); window.addEventListener("offline", updateOnlineState);
   window.addEventListener("popstate", () => { view = routeView(); render(); focusRouteHeading(); });
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.addEventListener("message", (event) => { if (event.data?.type === "SW_UPDATED") showToast("Notebook updated and ready offline."); });
+    navigator.serviceWorker.addEventListener("message", (event) => { if (event.data?.type === "SW_UPDATED" && hadServiceWorkerControllerAtLoad) showToast("Notebook updated and ready offline."); });
     navigator.serviceWorker.addEventListener("controllerchange", () => { setOfflineReady(false); void registerOfflineSupport(); });
     if (document.readyState === "complete") void registerOfflineSupport();
     else window.addEventListener("load", () => void registerOfflineSupport(), { once: true });

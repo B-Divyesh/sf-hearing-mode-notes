@@ -237,6 +237,74 @@ test("has no serious or critical accessibility violations in light and dark redu
   expect(dark.violations.filter((violation) => ["serious", "critical"].includes(violation.impact ?? ""))).toEqual([]);
 });
 
+test("keeps the job, audience, sample action, and three facts in the first usable viewport", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("[data-offline-status]")).toHaveText("Offline ready");
+  await expect(page.getByRole("heading", { name: "Remember hearing-aid settings by place" })).toBeVisible();
+  await expect(page.getByText("For hearing-aid wearers who need a private record of which setup worked in each place.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Try it with sample data" })).toBeVisible();
+  await expect(page.locator(".plain-facts li")).toHaveCount(3);
+  await expect(page.locator("[data-toast]")).toBeHidden();
+
+  const geometry = await page.evaluate(() => {
+    const elements = [
+      document.querySelector("h1"),
+      document.querySelector(".lede"),
+      document.querySelector(".hero-action"),
+      ...document.querySelectorAll(".plain-facts li")
+    ].filter((element): element is Element => element !== null);
+    const nav = document.querySelector(".app-nav");
+    const usableBottom = matchMedia("(max-width: 700px)").matches && nav
+      ? nav.getBoundingClientRect().top
+      : innerHeight;
+    return {
+      scrollY,
+      usableBottom,
+      items: elements.map((element) => {
+        const rect = element.getBoundingClientRect();
+        return { text: element.textContent?.trim(), top: rect.top, bottom: rect.bottom };
+      })
+    };
+  });
+
+  expect(geometry.scrollY).toBe(0);
+  expect(geometry.items).toHaveLength(6);
+  for (const item of geometry.items) {
+    expect(item.top, `${item.text} starts above the viewport`).toBeGreaterThanOrEqual(0);
+    expect(item.bottom, `${item.text} falls below the usable viewport`).toBeLessThanOrEqual(geometry.usableBottom);
+  }
+});
+
+test("keeps History search text clear of its icon without horizontal scrolling", async ({ page }) => {
+  await page.goto("/demo?view=history");
+  const search = page.getByLabel("Search notes");
+  await search.fill("Noise reduction");
+  await expect(page.locator(".note-entry")).toHaveCount(1);
+  await expect(page.locator(".note-entry")).toContainText("Commute");
+
+  const geometry = await page.evaluate(() => {
+    const tools = document.querySelector(".history-tools")?.getBoundingClientRect();
+    const input = document.querySelector<HTMLInputElement>("[data-search]");
+    const icon = document.querySelector(".search-field .icon")?.getBoundingClientRect();
+    if (!tools || !input || !icon) throw new Error("History search geometry is unavailable");
+    const inputRect = input.getBoundingClientRect();
+    const styles = getComputedStyle(input);
+    const textStart = inputRect.left + parseFloat(styles.borderLeftWidth) + parseFloat(styles.paddingLeft);
+    return {
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      toolsLeft: tools.left,
+      toolsRight: tools.right,
+      iconTextGap: textStart - icon.right
+    };
+  });
+
+  expect(geometry.scrollWidth).toBe(geometry.clientWidth);
+  expect(geometry.toolsLeft).toBeGreaterThanOrEqual(0);
+  expect(geometry.toolsRight).toBeLessThanOrEqual(geometry.clientWidth);
+  expect(geometry.iconTextGap).toBeGreaterThanOrEqual(8);
+});
+
 test("keeps every visible public control at least 44 pixels on a phone", async ({ page }) => {
   const routes = ["/", "/demo", "/history", "/settings", "/privacy", "/terms", "/404.html"];
   for (const route of routes) {

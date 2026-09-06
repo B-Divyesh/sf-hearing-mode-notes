@@ -1,4 +1,4 @@
-const CACHE = "hearing-mode-notes-v8";
+const CACHE = "hearing-mode-notes-v9";
 const SHELL = ["/", "/index.html", "/demo", "/history", "/settings", "/privacy", "/terms", "/404.html", "/offline.html", "/manifest.webmanifest", "/icon.svg", "/icon-192.png", "/icon-512.png", "/social-card.webp", "/assets/notebook-hero-480.webp", "/assets/notebook-hero-720.webp", "/assets/notebook-hero-1280.webp"];
 // scripts/postbuild.mjs replaces this with the exact hashed JavaScript and CSS
 // emitted by Vite. Keeping the list explicit makes installation atomic: a
