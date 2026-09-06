@@ -1,41 +1,39 @@
-# Hearing Mode Notes verification 5 handoff
+# Hearing Mode Notes review 3 handoff
 
-Date: 2026-09-05 UTC
+Date: 2026-09-06 UTC
 
 ## Result
 
-**PASS — 0 findings and 0 untested public claims.**
+**FAIL — 1 finding and 0 untested public claims.**
 
 - Implementation reviewed: `259a36a04489fcef97900ffa2cef034374acfeeb`
-- Documentation baseline: `4f7a541a32951bcd250fc4c06885f396da7025cd`
+- Documentation baseline: `681ee36f416c1976ee2197655c4244f9ec20b10f`
 - Live product: <https://hearing-mode-notes.sociobot.in>
-- Full report: [verification-5.md](verification-5.md)
+- Full report: [review-3.md](review-3.md)
 
-No product code was changed. This work order independently verified the deployed implementation and changed only verification documentation.
+No product code was changed. This review changes only review and handoff documentation.
 
-## Product and first screen
+## Finding to repair
 
-- Job: remember which hearing-aid listening setup worked at a place.
-- Audience: hearing-aid wearers who need a quick, private record of place-specific settings.
-- First action: **Try it with sample data**. It loads three realistic sample notes in a separate local notebook.
+R3-01 (Medium): offline reload is unreliable at the first ready boundary. The first clean full suite failed the phone offline claim and a rerun passed. Repeating that claim five times per project produced 9/10 passes. Ten fresh live phone contexts failed when taken offline immediately after an active controller appeared; five runs delayed by 100–2,000 ms all passed.
 
-Fresh desktop and phone contexts showed the job, audience, first action, and adjacent sample explanation before scrolling.
+Make offline readiness deterministic, then repeat the full suite and fresh phone offline transitions with no failures.
 
-## What was verified
+## What passed
 
-- The live HTML, JavaScript, CSS, worker, manifest, icon, and generated route shells byte-match a clean build of `259a36a`.
-- One-click sample entry, persistent sample label, populated output, reset, Start for real, and real/demo isolation pass.
-- Normal save/reload, required-field errors, 60-character boundary, special characters, denied location, four-field search, no results, delete/cancel/undo, invalid import, storage failure, and erase-through-reload pass.
-- Fresh light desktop and dark/reduced-motion phone axe scans found no serious or critical issue.
-- Keyboard focus, Arrow keys, route announcements, browser Back scroll restoration, 200% text, and every public 44 px target pass.
-- Cache `hearing-mode-notes-v7` controls the demo; update and offline reload pass.
-- Privacy instrumentation found no microphone call, device connection, third-party request, analytics, or note sync. Location ran only after its button.
-- Route titles, legal pages, links, sitemap, manifest, response headers, and designed HTTP 404 pass.
-- All earlier findings, including the legal support targets, full-field search claim, and erase-on-reload claim, are closed.
+- Fresh desktop and phone sessions showed the job, audience, and sample action before scrolling.
+- One-click sample entry, persistent sample label, three populated records, reset, exit, and real/demo isolation passed.
+- Normal save/reload, required fields, 60-character boundary, special characters, denied location, search/no-results, delete/cancel/undo, invalid import, and blocked-storage recovery passed.
+- Keyboard focus, Arrow keys, route announcements, browser Back scroll restoration, 200% text, reduced motion, and 44 px targets passed.
+- Fresh desktop and phone axe scans found no serious or critical issues. `verify-url.sh` passed.
+- Privacy instrumentation found no microphone use, device connection, third-party request, analytics, or note sync. Location ran only after its button.
+- Route titles, legal pages, links, sitemap, manifest, security headers, cache headers, and designed HTTP 404 passed.
+- The clean candidate build byte-matched the live deployment.
+- All earlier findings are resolved; R3-01 is new.
 
-## How to verify
+## Clean verification
 
-From a clean checkout at the implementation candidate:
+From the detached candidate checkout:
 
 ```sh
 npm ci
@@ -47,32 +45,22 @@ npm audit --omit=dev
 npx cap sync android
 ```
 
-Results: 9/9 unit tests, 40/40 end-to-end tests, successful production build, 0 production vulnerabilities, and successful Capacitor sync.
+Results: 9/9 unit tests, successful production build, 0 production vulnerabilities, and successful Capacitor sync. The first full E2E run was 39/40 because the phone offline test failed; its rerun was 40/40. All 13 exact claim commands passed once for 26/26 project runs. The offline claim repeat was 9/10 and is the finding.
 
-Run each `test` value in `.factory/claims.json` separately. All 13 commands passed in desktop Chromium and the 390 px phone project, for 26/26 project runs.
-
-Live URL evidence:
-
-```sh
-/opt/fleet/lib/verify-url.sh \
-  https://hearing-mode-notes.sociobot.in/demo \
-  /work/.evidence/verification-5/verify-url
-```
-
-Fresh mobile Lighthouse 12.8.2 scored 97 performance, 100 accessibility, 100 best practices, and 100 SEO. FCP was 1.0 s, LCP 2.0 s, TBT 180 ms, CLS 0, and transfer 225 KiB.
+Fresh mobile Lighthouse scored 99 performance, 100 accessibility, 100 best practices, and 100 SEO. FCP was 0.91 s, LCP 1.96 s, TBT 0 ms, CLS 0, and transfer 230,448 bytes.
 
 ## Evidence
 
-- `/work/.evidence/verification-5/lighthouse-mobile.json`
-- `/work/.evidence/verification-5/desktop-real-history.png`
-- `/work/.evidence/verification-5/phone-demo.png`
-- `/work/.evidence/verification-5/verify-url/`
-- `/work/.evidence/verification-5/claims/*.json`
-- `/work/.evidence/qa-report.md`
-- `/work/.evidence/qa-result.json`
+- `/work/.evidence/review-3/live/desktop-first-screen.png`
+- `/work/.evidence/review-3/live/phone-first-screen.png`
+- `/work/.evidence/review-3/live/desktop-audit.json`
+- `/work/.evidence/review-3/live/phone-routes-audit.json`
+- `/work/.evidence/review-3/live/offline-repeat-10.json`
+- `/work/.evidence/review-3/live/offline-repeat-delay.json`
+- `/work/.evidence/review-3/live/lighthouse-mobile.json`
+- `/work/.evidence/review-3/claims/`
+- `/work/.evidence/review-3/clean/`
 
-## Remaining external work
+## External limitation
 
-APK compilation remains unavailable in this worker because Java and the Android SDK are absent. The Capacitor project syncs successfully, and the README makes no APK availability claim. An Android SDK-equipped artifact work order is still required to build an APK.
-
-The brief describes an eventual one-time purchase, but no Sociobot billing product is registered. The public product deliberately exposes no checkout, price, paid gate, or purchase claim. If billing registration becomes available, use only the Sociobot hosted checkout contract and keep notes, export, accessibility, reminders, and safety behavior free.
+APK compilation cannot run in this worker because Java and the Android SDK are absent. The Capacitor project syncs, and the public product makes no APK download claim.
