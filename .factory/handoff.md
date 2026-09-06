@@ -1,39 +1,36 @@
-# Hearing Mode Notes verification 6 handoff
+# Hearing Mode Notes review 4 handoff
 
 Date: 2026-09-06 UTC
 
 ## Result
 
-**PASS — 0 findings and 0 untested public claims.**
+**FAIL — 2 findings and 0 untested public claims.**
 
 - Implementation SHA: `2810c7061ae9623819d0fceb41509aff174b9ace`
-- Documentation baseline: `b8b2fd9cc3c419e46de4ee306fb59a318e1ffe18`
+- Documentation baseline: `399506ba813e212261b31263f602d8b4053f9caa`
 - Live product: <https://hearing-mode-notes.sociobot.in>
-- Full report: [.factory/verification-6.md](verification-6.md)
+- Full report: [.factory/review-4.md](review-4.md)
 
-No product code changed in verification 6. The later documentation commit differs from the implementation SHA only in `.factory/handoff.md`.
+No product code changed in review 4. A clean candidate build matches the live runtime byte for byte.
 
-## First screen
+## Findings to repair
 
-- Job: remember hearing-aid settings by place.
-- Audience: hearing-aid wearers who need a private record of which setup worked in each place.
-- First action: **Try it with sample data**. It loads three realistic sample notes.
+1. **R4-01, Medium:** keep all three privacy/offline/location facts inside the first 1440×900 and 390×844 viewport. On phone they currently sit under the fixed bottom navigation.
+2. **R4-02, Low:** restore enough left padding for History search text and remove the 4 px horizontal overflow at 390 px. The icon currently overlays the placeholder and entered text.
 
-Fresh 1440×900 desktop and 390×844 phone sessions showed all three before scrolling.
+After repair, repeat the first-screen coordinate check and the 390 px History width/text geometry check before running the full gates.
 
-## Verification completed
+## What passed
 
-- The clean implementation checkout passed `npm run check`, 9/9 unit tests, production build, production audit, and Capacitor Android sync.
-- The full browser suite passed 40/40 across desktop Chromium and the 390 px phone project.
-- All 13 declared claim commands passed separately: 26/26 project runs.
-- The live sample showed three populated notes and its persistent label. Reset restored the sample, and demo changes did not enter the real notebook.
-- Ten fresh live phone contexts passed immediate first-visit offline reload after the visible **Offline ready** state: 10/10 with cache v8.
-- Live desktop and phone Axe scans had zero violations. Keyboard focus, dialog focus, Arrow keys, reduced motion, blocked-storage recovery, 44 px targets, legal pages, direct routes, links, and the designed HTTP 404 passed.
-- Complete live use made no third-party, microphone, or device-connection request. Location ran only after its named action.
-- Live HTML, JavaScript, CSS, worker, manifest, icon, and generated route shells match the clean implementation build byte for byte.
-- Fresh live Lighthouse: Performance 98, Accessibility 100, Best Practices 100, SEO 100; FCP 1.0 s, LCP 2.0 s, TBT 130 ms, CLS 0.
-
-Evidence is in `/work/.evidence/verification-6/`. The required report copy is `/work/.evidence/qa-report.md`; the machine result is `/work/.evidence/qa-result.json`.
+- Job, audience, and **Try it with sample data** action appear before scrolling on desktop and phone.
+- The isolated sample has three realistic notes, a persistent label, reset, and real-data separation.
+- All 13 declared claim commands passed separately: 26/26 project runs, with 0 untested public claims.
+- `npm run check`, 9/9 unit tests, production build, 40/40 browser tests, production audit, and Capacitor sync passed from the clean candidate.
+- Normal, invalid, boundary, blocked-storage, undo, import-recovery, keyboard, focus, Back/scroll, reduced-motion, legal, link, route-title, and designed HTTP 404 paths passed live.
+- Ten fresh live phone contexts passed immediate first-visit offline reload: 10/10 with cache v8.
+- Live Playwright Axe and Axe CLI reported zero violations. Every visible public control met 44×44 CSS px.
+- Live requests stayed first-party. No microphone or device-connection call occurred; location ran only through its named action.
+- Fresh Lighthouse: Performance 99, Accessibility 100, Best Practices 100, SEO 100; FCP 0.9 s, LCP 2.0 s, TBT 0 ms, CLS 0.
 
 ## Run locally
 
@@ -49,11 +46,9 @@ npm audit --omit=dev
 
 Run each command printed from `.factory/claims.json` separately for the public-claim gate.
 
-## Earlier findings
-
-All earlier findings remain resolved: worker installation and deployment identity; skip-link focus; performance; isolated demo and claim coverage; malformed import recovery; dialog focus and place-tab keys; 44 px touch targets, including legal support links; response headers and cache policy; Android location permissions; direct routes, metadata, sitemap, and designed 404; landing copy and structure; four-field search coverage; persistent local-data erasure; and deterministic first-visit offline readiness.
-
 ## Known limitations
 
-- One-time purchase remains an external billing-registration dependency. No price, checkout, paid gate, or purchase promise is public; the complete free local notebook remains available.
-- This worker has no Java executable or Android SDK, so `assembleDebug` cannot run. Capacitor sync passes, and the product makes no APK download or installed-artifact claim.
+- One-time purchase remains an external billing-registration dependency. No price, checkout, paid gate, or purchase promise is public; the complete local notebook remains available.
+- This worker has no Java executable or Android SDK, so `assembleDebug` cannot run. The product makes no APK download or installed-artifact claim.
+
+Evidence is in `/work/.evidence/review-4/`. Required copies are `/work/.evidence/qa-report.md` and `/work/.evidence/qa-result.json`.
