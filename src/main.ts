@@ -26,6 +26,7 @@ let editingId: string | null = null;
 let lastDeleted: SetupNote | null = null;
 let noteOpener: HTMLElement | null = null;
 let saveClosingDialog = false;
+let offlineReady = false;
 
 const SAMPLE_BUNDLE: ExportBundle = {
   product: "hearing-mode-notes",
@@ -101,7 +102,7 @@ function header(): string {
   return `<header class="site-header">
     <a class="brand" href="${isDemo ? demoBase : "/"}" aria-label="Hearing Mode Notes home">${icon("book")}<span>Hearing Mode Notes</span></a>
     <nav class="site-links" aria-label="Site"><a href="/demo">Try sample</a><a href="${urlForView("history")}" data-route>History</a><a href="/privacy" data-route>Privacy</a></nav>
-    <button class="button primary compact desktop-new" type="button" data-new data-focus-key="new">${icon("plus")} Note a setup</button>
+    <div class="header-actions"><span class="connection" data-offline-status data-state="${offlineReady ? "ready" : "pending"}" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><span>${offlineReady ? "Offline ready" : "Offline setup pending"}</span></span><button class="button primary compact desktop-new" type="button" data-new data-focus-key="new">${icon("plus")} Note a setup</button></div>
   </header>`;
 }
 
@@ -317,13 +318,65 @@ async function startForReal(): Promise<void> { await clearAllData(); sessionStor
 
 function updateOnlineState(): void { document.documentElement.classList.toggle("offline", !navigator.onLine); }
 
+function setOfflineReady(ready: boolean): void {
+  offlineReady = ready;
+  document.documentElement.dataset.offlineReady = String(ready);
+  const status = document.querySelector<HTMLElement>("[data-offline-status]");
+  if (!status) return;
+  status.dataset.state = ready ? "ready" : "pending";
+  const label = status.querySelector<HTMLElement>("span:last-child");
+  if (label) label.textContent = ready ? "Offline ready" : "Offline setup pending";
+}
+
+function waitForServiceWorkerController(): Promise<ServiceWorker> {
+  if (navigator.serviceWorker.controller) return Promise.resolve(navigator.serviceWorker.controller);
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => reject(new Error("Service worker did not take control.")), 10_000);
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      window.clearTimeout(timeout);
+      const controller = navigator.serviceWorker.controller;
+      if (controller) resolve(controller);
+      else reject(new Error("Service worker controller was unavailable."));
+    }, { once: true });
+  });
+}
+
+function confirmOfflineReady(controller: ServiceWorker): Promise<boolean> {
+  return new Promise((resolve) => {
+    const channel = new MessageChannel();
+    const timeout = window.setTimeout(() => resolve(false), 10_000);
+    channel.port1.onmessage = (event) => {
+      window.clearTimeout(timeout);
+      resolve(event.data?.type === "OFFLINE_READY" && event.data.ready === true);
+    };
+    controller.postMessage({ type: "CHECK_OFFLINE_READY" }, [channel.port2]);
+  });
+}
+
+async function registerOfflineSupport(): Promise<void> {
+  try {
+    await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.ready;
+    const controller = await waitForServiceWorkerController();
+    setOfflineReady(await confirmOfflineReady(controller));
+  } catch {
+    setOfflineReady(false);
+    showToast("Offline setup is unavailable right now. Your local notes still work.");
+  }
+}
+
 async function init(): Promise<void> {
   try { [notes, settings] = await Promise.all([getNotes(), getSettings()]); if (isDemo && notes.length === 0 && sessionStorage.getItem(DEMO_SEEDED_SESSION_KEY) !== "1") { await importBundle(SAMPLE_BUNDLE); sessionStorage.setItem(DEMO_SEEDED_SESSION_KEY, "1"); [notes, settings] = await Promise.all([getNotes(), getSettings()]); } }
   catch { root.innerHTML = `<main id="main" class="fatal-error" tabindex="-1"><h1>Your notebook could not open</h1><p>Device storage may be blocked or full. Allow site storage, then reload.</p><button class="button primary" type="button" data-reload>Try again</button></main>`; root.querySelector<HTMLButtonElement>("[data-reload]")?.addEventListener("click", () => location.reload()); return; }
   view = routeView(); render(); updateOnlineState();
   window.addEventListener("online", updateOnlineState); window.addEventListener("offline", updateOnlineState);
   window.addEventListener("popstate", () => { view = routeView(); render(); focusRouteHeading(); });
-  if ("serviceWorker" in navigator) { navigator.serviceWorker.addEventListener("message", (event) => { if (event.data?.type === "SW_UPDATED") showToast("Notebook updated and ready offline."); }); const register = () => navigator.serviceWorker.register("/sw.js").catch(() => showToast("Offline setup is unavailable right now. Your local notes still work.")); if (document.readyState === "complete") void register(); else window.addEventListener("load", () => void register(), { once: true }); }
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.addEventListener("message", (event) => { if (event.data?.type === "SW_UPDATED") showToast("Notebook updated and ready offline."); });
+    navigator.serviceWorker.addEventListener("controllerchange", () => { setOfflineReady(false); void registerOfflineSupport(); });
+    if (document.readyState === "complete") void registerOfflineSupport();
+    else window.addEventListener("load", () => void registerOfflineSupport(), { once: true });
+  }
   if (currentUrl().searchParams.get("new") === "1") openNote(document.querySelector<HTMLElement>("[data-new]") ?? root);
 }
 

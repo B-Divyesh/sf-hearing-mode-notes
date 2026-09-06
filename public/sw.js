@@ -1,14 +1,22 @@
-const CACHE = "hearing-mode-notes-v7";
+const CACHE = "hearing-mode-notes-v8";
 const SHELL = ["/", "/index.html", "/demo", "/history", "/settings", "/privacy", "/terms", "/404.html", "/offline.html", "/manifest.webmanifest", "/icon.svg", "/icon-192.png", "/icon-512.png", "/social-card.webp", "/assets/notebook-hero-480.webp", "/assets/notebook-hero-720.webp", "/assets/notebook-hero-1280.webp"];
+// scripts/postbuild.mjs replaces this with the exact hashed JavaScript and CSS
+// emitted by Vite. Keeping the list explicit makes installation atomic: a
+// worker cannot claim a page until every file needed to render it is cached.
+const PRECACHE_ASSETS = [];
 const APP_ROUTES = new Set(["/", "/index.html", "/demo", "/history", "/settings", "/privacy", "/terms", "/404.html"]);
+const OFFLINE_REQUIREMENTS = ["/demo", "/index.html", ...PRECACHE_ASSETS];
+
+async function hasOfflineShell() {
+  const cache = await caches.open(CACHE);
+  const responses = await Promise.all(OFFLINE_REQUIREMENTS.map((path) => cache.match(path, { ignoreSearch: true, ignoreVary: true })));
+  return responses.every(Boolean);
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
-    await cache.addAll(SHELL);
-    const html = await (await fetch("/index.html")).text();
-    const assets = [...html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map((match) => match[1]);
-    await cache.addAll(assets);
+    await cache.addAll([...SHELL, ...PRECACHE_ASSETS]);
     self.skipWaiting();
   })());
 });
@@ -64,4 +72,10 @@ self.addEventListener("fetch", (event) => {
 
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
+  if (event.data?.type === "CHECK_OFFLINE_READY") {
+    event.waitUntil((async () => {
+      const ready = await hasOfflineShell();
+      event.ports[0]?.postMessage({ type: "OFFLINE_READY", ready, cache: CACHE });
+    })());
+  }
 });

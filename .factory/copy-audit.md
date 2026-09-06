@@ -1,6 +1,6 @@
 # Landing copy audit
 
-Audited 2026-09-05. This list covers all visitor-facing sentences and short facts on the landing page, including the populated and empty states. No line exceeds 22 words and no banned plain-words term appears.
+Audited 2026-09-06. This list covers all visitor-facing sentences and short facts on the landing page, including the populated and empty states. No line exceeds 22 words and no banned plain-words term appears.
 
 | Copy | Words | Result |
 | --- | ---: | --- |
@@ -11,6 +11,8 @@ Audited 2026-09-05. This list covers all visitor-facing sentences and short fact
 | Stored on this device. | 4 | Pass |
 | Works offline after the first visit. | 6 | Pass |
 | Location only when you ask. | 5 | Pass |
+| Offline setup pending | 3 | Pass |
+| Offline ready | 2 | Pass |
 | Setup for [place] | 3 | Pass |
 | Your saved setup will appear here | 6 | Pass |
 | Save a place, listening mode, and volume to find it again. | 11 | Pass |

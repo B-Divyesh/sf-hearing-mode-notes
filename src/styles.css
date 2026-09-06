@@ -118,7 +118,9 @@ img { display: block; max-width: 100%; }
 .brand .icon { width: 28px; height: 28px; color: var(--ink); }
 .connection { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; font-weight: 650; }
 .status-dot { width: 9px; height: 9px; border: 2px solid var(--sheet); border-radius: 50%; background: var(--sage); box-shadow: 0 0 0 1px var(--sage); }
+.connection[data-state="pending"] .status-dot { background: var(--ochre); box-shadow: 0 0 0 1px var(--ochre); }
 .offline .status-dot { background: var(--ochre); box-shadow: 0 0 0 1px var(--ochre); }
+.header-actions { justify-self: end; display: flex; align-items: center; gap: 16px; }
 .site-header .desktop-new { justify-self: end; }
 .site-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 12px; }
 .site-links a { min-height: 44px; padding: 10px 6px; display: inline-flex; align-items: center; color: var(--ink); font-size: 14px; font-weight: 760; }

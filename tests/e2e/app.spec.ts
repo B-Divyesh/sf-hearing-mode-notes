@@ -90,10 +90,7 @@ test("@claim:offline-reload works offline after the first visit", async ({ brows
   const page = await context.newPage();
   try {
     await page.goto("/demo");
-    await page.waitForFunction(async () => {
-      const registration = await navigator.serviceWorker?.getRegistration();
-      return Boolean(registration?.active && navigator.serviceWorker?.controller);
-    });
+    await expect(page.locator("[data-offline-status]")).toHaveText("Offline ready");
     await page.evaluate(() => { (window as unknown as { __reloadMarker: boolean }).__reloadMarker = true; });
     await context.setOffline(true);
     // Chromium can report an offline navigation event before the worker's

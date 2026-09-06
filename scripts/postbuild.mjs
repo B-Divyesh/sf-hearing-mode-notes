@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 
 const html = await readFile("dist/index.html", "utf8");
 const pages = [
@@ -27,3 +27,13 @@ for (const page of pages) {
 }
 await writeFile("dist/404.html", pageHtml({ route: "404", title: "Page not found — Hearing Mode Notes", description: "Return to Hearing Mode Notes to save or find a listening setup.", canonical: "/404" }));
 await copyFile("staticwebapp.config.json", "dist/staticwebapp.config.json");
+
+const precacheAssets = (await readdir("dist/assets"))
+  .filter((file) => /\.(?:css|js)$/.test(file))
+  .map((file) => `/assets/${file}`)
+  .sort();
+const workerPath = "dist/sw.js";
+const worker = await readFile(workerPath, "utf8");
+const patchedWorker = worker.replace("const PRECACHE_ASSETS = [];", `const PRECACHE_ASSETS = ${JSON.stringify(precacheAssets)};`);
+if (patchedWorker === worker) throw new Error("Service-worker precache marker was not found.");
+await writeFile(workerPath, patchedWorker);

@@ -29,4 +29,4 @@ The browser regression test tagged @claim:sample-sandbox saves a real note, ente
 
 ## Offline verification
 
-@claim:offline-reload opens /demo in its own fresh browser context, waits for the service worker to control it, switches that context offline, reloads, and checks the sample setup remains visible.
+@claim:offline-reload opens /demo in its own fresh browser context, waits for the visible **Offline ready** state, switches that context offline, reloads, and checks the sample setup remains visible. The state appears only after the worker confirms that the page shell and its JavaScript and CSS are cached.
